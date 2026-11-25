@@ -29,6 +29,7 @@ from src.mercado.application.actualizar_precios_use_case import ActualizarPrecio
 from src.mercado.application.buscar_objetos_use_case import BuscarObjetos
 from src.mercado.application.comparar_precios_use_case import CompararPrecios
 from src.mercado.application.obtener_nombres_objetos_use_case import ObtenerNombresObjetos
+from src.mercado.application.obtener_objeto_use_case import ObtenerObjeto
 from src.mercado.domain.ports.i_proveedor_precios import IProveedorPrecios
 from src.mercado.infrastructure.sqlite_catalogo_objetos import SqliteCatalogoObjetos
 from src.mercado.infrastructure.sqlite_precio_mercado_repository import (
@@ -93,6 +94,7 @@ class Contenedor:
         self.importar_gastos = ImportarGastos(gastos, reloj)
 
         self.buscar_objetos = BuscarObjetos(self.catalogo)
+        self.obtener_objeto = ObtenerObjeto(self.catalogo)
         self.obtener_nombres = ObtenerNombresObjetos(self.catalogo)
         self.actualizar_precios = ActualizarPrecios(externos.proveedor_precios, precios)
         self.comparar_precios = CompararPrecios(precios, self.actualizar_precios, reloj)

@@ -58,6 +58,7 @@ class ComparacionOut(BaseModel):
     directa: OpcionOut | None
     orden: OpcionOut | None  # el Black Market no admite órdenes de venta
     mejor: TipoVenta | None
+    confiable: bool  # si la mejor opción de la ciudad tiene un dato reciente
     diferencia_orden_vs_directa: int | None
 
     @classmethod
@@ -66,6 +67,7 @@ class ComparacionOut(BaseModel):
         return cls(
             ciudad=comparacion.ciudad,
             es_del_gremio=comparacion.ciudad.es_del_gremio,
+            confiable=comparacion.confiable,
             directa=OpcionOut.desde(comparacion.directa),
             orden=OpcionOut.desde(comparacion.orden),
             mejor=mejor.tipo if mejor else None,

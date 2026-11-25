@@ -34,8 +34,14 @@ class ComparacionCiudad:
 
     @property
     def mejor(self) -> OpcionVenta | None:
+        """La de mayor neto, pero un dato viejo nunca le gana a uno reciente: puede estar desactualizado."""
         candidatas = [o for o in (self.directa, self.orden) if o is not None]
-        return max(candidatas, key=lambda o: o.desglose.neto, default=None)
+        return max(candidatas, key=lambda o: (o.confiable, o.desglose.neto), default=None)
+
+    @property
+    def confiable(self) -> bool:
+        mejor = self.mejor
+        return mejor is not None and mejor.confiable
 
     @property
     def diferencia_orden_vs_directa(self) -> int | None:

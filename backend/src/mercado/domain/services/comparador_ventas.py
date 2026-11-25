@@ -47,7 +47,8 @@ def comparar_por_ciudad(
     tasas: TasasMercado = TASAS_PREMIUM,
     antiguedad_maxima: timedelta = ANTIGUEDAD_MAXIMA,
 ) -> list[ComparacionCiudad]:
-    """Venta directa contra orden de venta en cada ciudad, de mayor a menor neto.
+    """Venta directa contra orden de venta en cada ciudad, de mayor a menor neto
+    (las de dato viejo, al final).
 
     - Directa: se vende a la orden de compra más alta.
     - Orden: se publica al precio de la orden de venta más barata (sin rebajarla).
@@ -73,7 +74,8 @@ def comparar_por_ciudad(
         if directa or orden:
             comparaciones.append(ComparacionCiudad(precio.ciudad, directa, orden))
 
-    return sorted(comparaciones, key=lambda c: c.mejor.desglose.neto, reverse=True)
+    # Primero las ciudades con dato reciente, de mayor a menor neto; después las de dato viejo.
+    return sorted(comparaciones, key=lambda c: (c.confiable, c.mejor.desglose.neto), reverse=True)
 
 
 def mejores_opciones(comparaciones: Iterable[ComparacionCiudad]) -> list[OpcionVenta]:

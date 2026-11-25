@@ -21,6 +21,11 @@ async def buscar_en_el_catalogo(
     return [ObjetoCatalogoOut.desde(objeto) for objeto in objetos]
 
 
+@router.get("/catalogo/{base_id}")
+async def obtener_del_catalogo(base_id: str, c: Contenedor = Depends(contenedor)) -> ObjetoCatalogoOut:
+    return ObjetoCatalogoOut.desde(await c.obtener_objeto.ejecutar(base_id))
+
+
 @router.get("/mercado/comparar")
 async def comparar(
     base_id: str,

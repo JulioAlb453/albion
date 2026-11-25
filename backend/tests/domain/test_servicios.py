@@ -13,6 +13,7 @@ from src.core.domain.value_objects.ciudad import Ciudad
 from src.core.domain.value_objects.objeto_ref import ObjetoRef
 from src.core.domain.value_objects.tipo_venta import TipoVenta
 from src.gastos.domain.entities.gasto import CategoriaGasto, Gasto
+from src.mercado.domain.entities.precio_mercado import PrecioMercado
 from src.mercado.domain.services.comparador_ventas import comparar_por_ciudad, mejores_opciones
 from src.ventas.domain.entities.venta import Venta
 from tests.domain.fixtures import AHORA, ESPADA, precio
@@ -53,6 +54,38 @@ class TestComparador:
         opciones = mejores_opciones(comparaciones)
         assert [o.ciudad for o in opciones] == [Ciudad.LYMHURST, Ciudad.THETFORD]
         assert not opciones[1].confiable
+
+    def test_dentro_de_una_ciudad_un_dato_viejo_no_gana_aunque_pague_mas(self):
+        mixto = PrecioMercado(
+            objeto=ESPADA, ciudad=Ciudad.LYMHURST,
+            venta_minima=500_000, venta_minima_fecha=AHORA - timedelta(days=2),  # vieja y generosa
+            compra_maxima=100_000, compra_maxima_fecha=AHORA - timedelta(minutes=10),
+        )
+        [lymhurst] = comparar_por_ciudad([mixto], ahora=AHORA)
+        assert lymhurst.mejor.tipo is TipoVenta.DIRECTA and lymhurst.confiable
+
+    def test_las_ciudades_con_datos_viejos_van_despues_aunque_su_neto_sea_mayor(self):
+        comparaciones = comparar_por_ciudad(
+            [
+                precio(Ciudad.THETFORD, compra=500_000, hace=timedelta(days=2)),
+                precio(Ciudad.LYMHURST, compra=100_000),
+            ],
+            ahora=AHORA,
+        )
+        assert [(c.ciudad, c.confiable) for c in comparaciones] == [
+            (Ciudad.LYMHURST, True), (Ciudad.THETFORD, False)
+        ]
+
+    def test_si_todo_es_viejo_se_ordena_por_neto_y_queda_marcado(self):
+        comparaciones = comparar_por_ciudad(
+            [
+                precio(Ciudad.THETFORD, compra=100_000, hace=timedelta(days=2)),
+                precio(Ciudad.LYMHURST, compra=300_000, hace=timedelta(days=3)),
+            ],
+            ahora=AHORA,
+        )
+        assert [c.ciudad for c in comparaciones] == [Ciudad.LYMHURST, Ciudad.THETFORD]
+        assert not any(c.confiable for c in comparaciones)
 
     def test_rechaza_objetos_mezclados(self):
         otra = ObjetoRef("T5_MAIN_SWORD")

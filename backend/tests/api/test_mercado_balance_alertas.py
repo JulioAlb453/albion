@@ -25,8 +25,20 @@ class TestCatalogo:
         solo_armaduras = await entorno.cliente.get("/api/catalogo", params={"q": "maestro", "categoria": "armadura"}, headers=general)
         assert [o["base_id"] for o in solo_armaduras.json()] == ["T6_ARMOR_PLATE_SET1"]
 
+    async def test_devuelve_un_objeto_por_su_identificador(self, entorno):
+        await entorno.contenedor.catalogo.reemplazar(CATALOGO)
+        respuesta = await entorno.cliente.get("/api/catalogo/T6_MAIN_SWORD", headers=await entorno.encabezados(Rol.GENERAL))
+        assert respuesta.json() == {
+            "base_id": "T6_MAIN_SWORD", "nombre": "Espada ancha del maestro", "categoria": "arma", "tiene_calidad": True,
+        }
+
+    async def test_un_objeto_que_no_existe_da_404(self, entorno):
+        respuesta = await entorno.cliente.get("/api/catalogo/T9_NADA", headers=await entorno.encabezados())
+        assert respuesta.status_code == 404
+
     async def test_pide_sesion(self, entorno):
         assert (await entorno.cliente.get("/api/catalogo")).status_code == 401
+        assert (await entorno.cliente.get("/api/catalogo/T6_MAIN_SWORD")).status_code == 401
 
 
 class TestComparar:
@@ -55,7 +67,15 @@ class TestComparar:
     async def test_marca_los_datos_viejos(self, entorno):
         entorno.precios.precios = [precio(Ciudad.CAERLEON, venta=120_000, hace=timedelta(days=1))]
         [caerleon] = (await self.comparar(entorno)).json()
-        assert caerleon["orden"]["confiable"] is False
+        assert caerleon["orden"]["confiable"] is False and caerleon["confiable"] is False
+
+    async def test_las_ciudades_con_datos_viejos_van_al_final_y_las_recientes_marcadas(self, entorno):
+        entorno.precios.precios = [
+            precio(Ciudad.CAERLEON, compra=900_000, hace=timedelta(days=1)),
+            precio(Ciudad.LYMHURST, compra=100_000),
+        ]
+        ciudades = (await self.comparar(entorno)).json()
+        assert [(c["ciudad"], c["confiable"]) for c in ciudades] == [("Lymhurst", True), ("Caerleon", False)]
 
     async def test_un_objeto_invalido_da_422(self, entorno):
         assert (await self.comparar(entorno, base_id="ESPADA")).status_code == 422

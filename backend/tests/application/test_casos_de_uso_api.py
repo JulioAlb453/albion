@@ -10,6 +10,7 @@ from src.core.domain.errors import AccesoDenegado, EntidadNoEncontrada, SesionIn
 from src.core.domain.value_objects.ciudad import Ciudad
 from src.core.domain.value_objects.tipo_venta import TipoVenta
 from src.mercado.application.obtener_nombres_objetos_use_case import ObtenerNombresObjetos
+from src.mercado.application.obtener_objeto_use_case import ObtenerObjeto
 from src.mercado.domain.entities.objeto import CategoriaObjeto, Objeto
 from src.usuarios.application.iniciar_sesion_con_discord_use_case import IniciarSesionConDiscord
 from src.usuarios.application.iniciar_sesion_use_case import IniciarSesion
@@ -36,6 +37,16 @@ class TestObtenerNombresObjetos:
 
     async def test_sin_identificadores_no_hay_nombres(self):
         assert await ObtenerNombresObjetos(CatalogoMemoria([])).ejecutar([]) == {}
+
+
+class TestObtenerObjeto:
+    async def test_devuelve_el_objeto_del_catalogo(self):
+        espada = Objeto("T6_MAIN_SWORD", "Espada ancha del maestro", CategoriaObjeto.ARMA)
+        assert await ObtenerObjeto(CatalogoMemoria([espada])).ejecutar("T6_MAIN_SWORD") == espada
+
+    async def test_uno_que_no_existe_no_se_encuentra(self):
+        with pytest.raises(EntidadNoEncontrada):
+            await ObtenerObjeto(CatalogoMemoria([])).ejecutar("T9_NADA")
 
 
 class TestObtenerSaldoInicial:

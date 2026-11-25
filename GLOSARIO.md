@@ -57,3 +57,16 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Tiempo de espera** | Mínimo entre dos alertas del mismo seguimiento: 2 h. | `ESPERA_ENTRE_ALERTAS` |
 | **Admin** | Registra ventas y gastos y configura alertas. | `Rol.ADMIN` |
 | **General** | Solo consulta y exporta. | `Rol.GENERAL` |
+| **Actor** | Usuario que ejecuta una operación. Toda operación que escribe lo recibe y exige que sea admin. | `exigir_admin` |
+
+## Aplicación
+
+| Término | Significado | En el código |
+|---|---|---|
+| **Caso de uso** | Una operación del sistema (registrar una venta, comparar precios…). Una clase por operación, con un método `ejecutar`. | `*/application/*_use_case.py` |
+| **Hora UTC** | La hora del juego. Una fecha sin zona se toma como UTC y toda fecha se guarda en UTC. | `a_utc` |
+| **Importación** | Carga de varias filas a la vez. Es todo o nada: si una fila es inválida no se guarda ninguna y se informan todas las malas con su número. | `importar`, `ResultadoImportacion` |
+| **Actualizar precios** | Traer de la API los precios de un lote de objetos y reemplazar los guardados. | `ActualizarPrecios` |
+| **Revisión de alertas** | Tarea periódica: actualiza los precios de los seguimientos con una sola consulta y avisa de los que cumplen su criterio. | `RevisarAlertas` |
+| **Ganancia por objeto** | Neto de las ventas de un objeto concreto. No resta costos, porque el gremio no registra cuánto costó cada objeto. | `GananciaObjeto` |
+| **Resultado** | Ventas netas menos gastos de un periodo. | `Reportes.resultado` |

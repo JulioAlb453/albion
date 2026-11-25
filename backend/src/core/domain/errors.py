@@ -8,3 +8,10 @@ class EntidadNoEncontrada(ErrorDominio):
 
 class AccesoDenegado(ErrorDominio):
     """El usuario no tiene permiso para la operación. La capa HTTP la traduce a 403."""
+
+
+class ServicioExternoNoDisponible(Exception):
+    """Un servicio del que depende el sistema (API de Albion, Discord) no respondió bien.
+
+    No es un error de dominio: la petición era válida. La capa HTTP la traduce a 502.
+    """

@@ -1,0 +1,68 @@
+/* Tokens del sistema de diseño. Oscuro es el tema por defecto; [data-tema="claro"] lo reemplaza. */
+:root {
+  color-scheme: dark;
+  --fuente: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radio-bloque: 20px;
+  --radio: 12px;
+  --gap: 16px;
+
+  --fondo: #0d1015;
+  --fondo-2: #11151b;
+  --superficie: #161b23;
+  --superficie-2: #1b212b;
+  --superficie-3: #242c38;
+  --borde: #262e3a;
+  --borde-fuerte: #364152;
+  --texto: #e8edf3;
+  --texto-2: #a3afc0;
+  --texto-3: #7d8a9d;
+
+  --acento: #e2b45f;
+  --acento-fuerte: #f1c97e;
+  --acento-texto: #1a1304;
+  --positivo: #46c08f;
+  --negativo: #f0786a;
+  --aviso: #eaa947;
+  --info: #67a8f7;
+
+  /* Colores categóricos de las gráficas: bien separados en tono y legibles sobre la superficie. */
+  --c1: #e2b45f;
+  --c2: #67a8f7;
+  --c3: #46c08f;
+  --c4: #b995f2;
+  --c5: #f0786a;
+  --c6: #4fc9dc;
+
+  --sombra: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 12px 32px rgb(0 0 0 / 0.28);
+}
+
+[data-tema="claro"] {
+  color-scheme: light;
+  --fondo: #f1eee6;
+  --fondo-2: #ece8dd;
+  --superficie: #fffdf8;
+  --superficie-2: #f8f4ea;
+  --superficie-3: #efe9da;
+  --borde: #e2dac7;
+  --borde-fuerte: #cfc4a9;
+  --texto: #1d1a12;
+  --texto-2: #5a5446;
+  --texto-3: #7d7563;
+
+  --acento: #9c6a07;
+  --acento-fuerte: #825700;
+  --acento-texto: #fffaf0;
+  --positivo: #17785a;
+  --negativo: #c0392b;
+  --aviso: #9a6200;
+  --info: #1c5fbf;
+
+  --c1: #9c6a07;
+  --c2: #1c5fbf;
+  --c3: #17785a;
+  --c4: #7a47c2;
+  --c5: #c0392b;
+  --c6: #0c7f95;
+
+  --sombra: 0 1px 2px rgb(60 45 10 / 0.06), 0 10px 28px rgb(60 45 10 / 0.08);
+}

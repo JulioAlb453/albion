@@ -7,3 +7,7 @@ __pycache__/
 data/
 *.db-wal
 *.db-shm
+node_modules/
+dist/
+*.log
+.env.local

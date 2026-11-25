@@ -1,0 +1,56 @@
+name: Frontend en GitHub Pages
+
+# Cada vez que cambia el frontend en main: se revisan los tipos, se corren las pruebas,
+# se construye y se publica. Hace falta una sola vez activar Pages (ver frontend/README.md).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          # En Pages la app vive en /<nombre-del-repositorio>/
+          VITE_BASE: /${{ github.event.repository.name }}/
+          # La dirección pública de tu API (el dominio de ngrok), definida en Settings > Variables
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4

@@ -82,6 +82,18 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Sin datos** | La API marca con la fecha `0001-01-01` un precio que nadie ha reportado. En el dominio es `None`. | `_fecha` |
 | **Servicio externo no disponible** | La API de Albion o Discord no respondió bien. No es un error de la petición: la capa HTTP lo traduce a 502. | `ServicioExternoNoDisponible` |
 
+## Interfaz
+
+| Término | Significado | En el código |
+|---|---|---|
+| **Bloque** | Cada tarjeta del Bento Grid. Ocupa de 3 a 12 de las 12 columnas y se reacomoda sola en pantallas chicas. | `Bloque` |
+| **Cajón** | Panel que entra por la derecha para formularios que no merecen una página: registrar una venta o un gasto, vigilar un objeto, importar. | `Cajon` |
+| **Dato viejo** | Precio de más de 6 horas. En el comparador la ciudad va al final, atenuada, y nunca se corona como mejor opción. | `Comparacion.confiable` |
+| **Mejor opción** | La primera ciudad de la lista con dato reciente: la que más neto deja. | `mejorCiudad` |
+| **Vista previa del desglose** | Bruto, impuesto, tarifa y neto que se muestran al escribir una venta. Es una estimación; el cálculo definitivo lo hace la API. | `calcularDesglose` |
+| **Plata abreviada** | Cantidades grandes como `120.6 M` o `553.5 k`; el valor exacto sale al pasar el cursor. | `plataCorta` |
+| **Atajos de periodo** | Botones de 7, 30 o 90 días y "Todo" en el Panel y los Reportes. | `Panel`, `Reportes` |
+
 ## API y arranque
 
 | Término | Significado | En el código |

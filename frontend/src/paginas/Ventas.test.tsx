@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { OBJETO_ESPADA, venta } from "../pruebas/datos";
-import { instalarApi, montarPagina, USUARIO_GENERAL } from "../pruebas/utiles";
+import { instalarApi, montarPagina, ultimaDescarga, USUARIO_GENERAL } from "../pruebas/utiles";
 import { guardarArchivo } from "../util/descargar";
 import { finDelDia, inicioDelDia } from "../util/formato";
 import { Ventas } from "./Ventas";
@@ -79,7 +79,8 @@ describe("exportar", () => {
     await userEvent.selectOptions(screen.getByLabelText(/ciudad/i), "Caerleon");
 
     await userEvent.click(screen.getByRole("button", { name: /exportar csv/i }));
-    await waitFor(() => expect(guardarArchivo).toHaveBeenCalledWith(expect.any(Blob), "ventas-2026-11-25.csv"));
+    await waitFor(() => expect(guardarArchivo).toHaveBeenCalled());
+    expect(await ultimaDescarga()).toEqual({ nombre: "ventas-2026-11-25.csv", contenido: "a,b" });
     expect(ultima(llamadas, "/api/ventas/exportar").params).toEqual({ ciudad: "Caerleon", formato: "csv" });
 
     await userEvent.click(screen.getByRole("button", { name: /exportar excel/i }));

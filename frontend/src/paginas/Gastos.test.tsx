@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Gasto } from "../api/tipos";
-import { instalarApi, montarPagina, USUARIO_GENERAL } from "../pruebas/utiles";
+import { instalarApi, montarPagina, ultimaDescarga, USUARIO_GENERAL } from "../pruebas/utiles";
 import { guardarArchivo } from "../util/descargar";
 import { finDelDia, inicioDelDia } from "../util/formato";
 import { Gastos } from "./Gastos";
@@ -64,7 +64,8 @@ describe("filtros y exportación", () => {
     await screen.findByRole("table");
     await userEvent.selectOptions(screen.getByLabelText(/categoría/i), "compra_equipo");
     await userEvent.click(screen.getByRole("button", { name: /exportar csv/i }));
-    await waitFor(() => expect(guardarArchivo).toHaveBeenCalledWith(expect.any(Blob), "gastos-2026-11-25.csv"));
+    await waitFor(() => expect(guardarArchivo).toHaveBeenCalled());
+    expect(await ultimaDescarga()).toEqual({ nombre: "gastos-2026-11-25.csv", contenido: "a" });
     expect(ultima(llamadas, "/api/gastos/exportar").params).toEqual({ categoria: "compra_equipo", formato: "csv" });
   });
 });

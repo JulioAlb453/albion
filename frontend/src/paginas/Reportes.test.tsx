@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Reportes as TipoReportes } from "../api/tipos";
 import { OBJETO_ESPADA } from "../pruebas/datos";
-import { instalarApi, json, montarPagina } from "../pruebas/utiles";
+import { instalarApi, json, montarPagina, ultimaDescarga } from "../pruebas/utiles";
 import { guardarArchivo } from "../util/descargar";
 import { diaLocalHaceDias, finDelDia, inicioDelDia } from "../util/formato";
 import { Reportes } from "./Reportes";
@@ -122,7 +122,8 @@ describe("exportar", () => {
     await screen.findByRole("table");
     await userEvent.click(screen.getByRole("button", { name: "30 días" }));
     await userEvent.click(screen.getByRole("button", { name: /exportar excel/i }));
-    await waitFor(() => expect(guardarArchivo).toHaveBeenCalledWith(expect.any(Blob), "reportes-2026-11-25.xlsx"));
+    await waitFor(() => expect(guardarArchivo).toHaveBeenCalled());
+    expect(await ultimaDescarga()).toEqual({ nombre: "reportes-2026-11-25.xlsx", contenido: "x" });
     expect(ultima(llamadas, "/api/reportes/exportar").params).toEqual({ desde: inicioDelDia(diaLocalHaceDias(30)), formato: "xlsx" });
 
     await userEvent.click(screen.getByRole("button", { name: /exportar csv/i }));

@@ -9,6 +9,7 @@ import { ContextoRegistro, type ValorRegistro } from "../componentes/ContextoReg
 import { URL_API } from "../config";
 import { ContextoSesion } from "../sesion/ContextoSesion";
 import { ProveedorAvisos } from "../ui/Avisos";
+import { guardarArchivo } from "../util/descargar";
 
 /** Un JWT con la forma real; solo importa la fecha de vencimiento. */
 export function jwtDeEjemplo(horas = 1): string {
@@ -37,6 +38,16 @@ export const USUARIO_ADMIN: Usuario = {
 export const USUARIO_GENERAL: Usuario = {
   discord_id: "2", nombre: "General", avatar_hash: null, rol: "general", puede_registrar: false,
 };
+
+/**
+ * Lo último que se mandó a guardar como archivo (en las pruebas que reemplazan `guardarArchivo`).
+ * Se mira el contenido y no la clase del Blob: según la versión de Node, el de la respuesta y el
+ * de jsdom son clases distintas aunque se comporten igual.
+ */
+export async function ultimaDescarga(): Promise<{ nombre: string; contenido: string }> {
+  const [archivo, nombre] = vi.mocked(guardarArchivo).mock.calls.at(-1)!;
+  return { nombre, contenido: await archivo.text() };
+}
 
 export interface Llamada {
   metodo: string;

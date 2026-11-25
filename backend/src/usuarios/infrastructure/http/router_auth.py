@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -8,6 +10,7 @@ from src.core.infrastructure.http.dependencias import contenedor, usuario_actual
 from src.usuarios.domain.entities.usuario import Rol, Usuario
 
 router = APIRouter(prefix="/api")
+_registro = logging.getLogger("gremio.auth")  # nunca recibe tokens, códigos ni IDs de personas
 
 
 class UsuarioOut(BaseModel):
@@ -62,9 +65,13 @@ async def callback(
     try:
         usuario = await c.iniciar_sesion_con_discord.ejecutar(code)
     except AccesoDenegado:
+        _registro.warning("Inicio de sesión rechazado: la persona está sin rol del gremio")
         return volver("error=sin_acceso")
-    except SesionInvalida:
+    except SesionInvalida as error:
+        _registro.warning("Inicio de sesión rechazado: %s", error)
         return volver("error=codigo_invalido")
-    except ServicioExternoNoDisponible:
+    except ServicioExternoNoDisponible as error:
+        # El navegador solo recibe un código; el motivo real queda aquí, en la consola del servidor.
+        _registro.warning("Inicio de sesión con Discord falló: %s", error)
         return volver("error=discord_no_disponible")
     return volver(f"token={c.emisor_tokens.emitir_sesion(usuario)}")

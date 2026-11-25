@@ -56,8 +56,8 @@ class TestDiscordOAuth:
         assert (partes.scheme, partes.netloc, partes.path) == ("https", "discord.com", "/oauth2/authorize")
         assert parse_qs(partes.query) == {
             "client_id": ["cid"], "response_type": ["code"], "scope": ["identify"],
-            "redirect_uri": [REDIRECT], "state": ["estado123"], "prompt": ["none"],
-        }
+            "redirect_uri": [REDIRECT], "state": ["estado123"],
+        }  # sin `prompt`: la primera vez debe verse la pantalla de autorizar
 
     async def test_canjea_el_codigo_pide_la_identidad_y_revoca_el_token(self):
         servidor = Servidor()
@@ -95,6 +95,11 @@ class TestDiscordOAuth:
         with pytest.raises(SesionInvalida):
             await oauth(servidor).identificar("viejo")
         assert servidor.rutas == ["/oauth2/token"]
+
+    async def test_unas_credenciales_rechazadas_dicen_que_variables_revisar(self):
+        servidor = Servidor(token=httpx.Response(401, json={"error": "invalid_client"}))
+        with pytest.raises(ServicioExternoNoDisponible, match="GREMIO_DISCORD_CLIENT_SECRET"):
+            await oauth(servidor).identificar("abc")
 
     @pytest.mark.parametrize("respuesta", [httpx.Response(503), httpx.Response(429)])
     async def test_discord_con_problemas_se_informa(self, respuesta):
@@ -140,8 +145,18 @@ class TestDirectorioRolesDiscord:
         assert await directorio(lambda r: httpx.Response(404, json={"code": 10007})).rol_de("1") is None
 
     async def test_un_servidor_mal_configurado_no_se_confunde_con_un_miembro_ausente(self):
-        with pytest.raises(ServicioExternoNoDisponible, match="GREMIO_DISCORD_GUILD_ID"):
+        with pytest.raises(ServicioExternoNoDisponible, match="Copiar ID del servidor") as error:
             await directorio(lambda r: httpx.Response(404, json={"code": 10004})).rol_de("1")
+        # La variable existe: el mensaje no debe leerse como "falta la variable".
+        assert "GREMIO_DISCORD_GUILD_ID" in str(error.value) and "existe" in str(error.value)
+
+    async def test_un_token_de_bot_rechazado_dice_que_variable_revisar(self):
+        with pytest.raises(ServicioExternoNoDisponible, match="GREMIO_DISCORD_BOT_TOKEN"):
+            await directorio(lambda r: httpx.Response(401)).rol_de("1")
+
+    async def test_un_bot_sin_acceso_sugiere_activar_el_intent_de_miembros(self):
+        with pytest.raises(ServicioExternoNoDisponible, match="Server Members Intent"):
+            await directorio(lambda r: httpx.Response(403)).rol_de("1")
 
     @pytest.mark.parametrize("estado", [401, 403, 500])
     async def test_otros_errores_se_informan_y_no_dejan_entrar(self, estado):

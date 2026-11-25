@@ -92,6 +92,18 @@ class TestDiscord:
         )
         assert respuesta.headers["location"] == f"{FRONTEND}#error=cancelado"
 
+    async def test_el_motivo_de_un_fallo_de_discord_queda_en_el_log_del_servidor(self, entorno, caplog):
+        entorno.identidad.caido = True
+        with caplog.at_level("WARNING", logger="gremio.auth"):
+            await volver(entorno, "codigo-admin")
+        assert "Discord no responde" in caplog.text
+
+    async def test_un_rechazo_por_falta_de_rol_tambien_se_registra_sin_datos_personales(self, entorno, caplog):
+        with caplog.at_level("WARNING", logger="gremio.auth"):
+            await volver(entorno, "codigo-intruso")
+        assert "sin rol del gremio" in caplog.text
+        assert "99" not in caplog.text and "intruso" not in caplog.text
+
     async def test_discord_caido_vuelve_con_error(self, entorno):
         entorno.identidad.caido = True
         assert await volver(entorno, "codigo-admin") == f"{FRONTEND}#error=discord_no_disponible"

@@ -34,7 +34,19 @@ class DirectorioRolesDiscord(IDirectorioRoles):
             if _codigo(respuesta) == _MIEMBRO_DESCONOCIDO:
                 return None
             raise ServicioExternoNoDisponible(
-                "Discord no encontró el servidor: revisa GREMIO_DISCORD_GUILD_ID"
+                "Discord no reconoce el servidor de GREMIO_DISCORD_GUILD_ID (la variable existe, "
+                "pero ese ID no es el de un servidor al que el bot tenga acceso). Cópialo con clic "
+                "derecho en el icono del servidor, Copiar ID del servidor, y confirma que el bot "
+                "está dentro"
+            )
+        if respuesta.status_code == 401:
+            raise ServicioExternoNoDisponible(
+                "Discord rechazó el token del bot (401): revisa GREMIO_DISCORD_BOT_TOKEN"
+            )
+        if respuesta.status_code == 403:
+            raise ServicioExternoNoDisponible(
+                "El bot no puede consultar a los miembros (403): confirma que está dentro del "
+                "servidor y activa Server Members Intent en el portal, sección Bot"
             )
         if respuesta.is_error:
             raise ServicioExternoNoDisponible(

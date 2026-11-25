@@ -26,6 +26,8 @@ class DiscordOAuthIdentidad(IProveedorIdentidad):
         self._redirect_uri = redirect_uri
 
     def url_autorizacion(self, estado: str) -> str:
+        # Sin `prompt`: con `none` Discord no documenta qué pasa si la persona nunca autorizó
+        # la aplicación, y la primera vez tiene que ver la pantalla de autorizar.
         consulta = urlencode(
             {
                 "client_id": self._client_id,
@@ -33,7 +35,6 @@ class DiscordOAuthIdentidad(IProveedorIdentidad):
                 "scope": "identify",
                 "redirect_uri": self._redirect_uri,
                 "state": estado,
-                "prompt": "none",  # si ya aceptó antes, no vuelve a mostrar la pantalla
             }
         )
         return f"{_AUTORIZAR}?{consulta}"
@@ -63,6 +64,11 @@ class DiscordOAuthIdentidad(IProveedorIdentidad):
         )
         if respuesta.status_code == 400:  # código vencido, ya usado o inventado
             raise SesionInvalida("Discord rechazó el código de inicio de sesión")
+        if respuesta.status_code == 401:  # Discord no reconoce la aplicación
+            raise ServicioExternoNoDisponible(
+                "Discord rechazó las credenciales de la aplicación (401): revisa "
+                "GREMIO_DISCORD_CLIENT_ID y GREMIO_DISCORD_CLIENT_SECRET"
+            )
         if respuesta.is_error:
             raise ServicioExternoNoDisponible(f"Discord respondió {respuesta.status_code} al iniciar sesión")
         return respuesta.json()["access_token"]

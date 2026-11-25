@@ -1,0 +1,13 @@
+[project]
+name = "albion-ventas-gremio"
+version = "0.1.0"
+description = "Gestión de ventas del gremio en Albion Online (servidor Americas)"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

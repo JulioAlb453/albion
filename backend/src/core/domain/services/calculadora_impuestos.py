@@ -22,6 +22,12 @@ class DesgloseVenta:
     tarifa_publicacion: int
     neto: int
 
+    def __post_init__(self) -> None:
+        if self.bruto <= 0 or self.impuesto < 0 or self.tarifa_publicacion < 0:
+            raise ErrorDominio("Desglose con montos inválidos")
+        if self.neto != self.bruto - self.total_cargos:
+            raise ErrorDominio("El neto no cuadra con el bruto menos los cargos")
+
     @property
     def total_cargos(self) -> int:
         return self.impuesto + self.tarifa_publicacion

@@ -70,14 +70,8 @@ class TestBalance:
             objeto=ESPADA, ciudad=Ciudad.LYMHURST, tipo=TipoVenta.DIRECTA,
             cantidad=1, precio_unitario=1_000_000, fecha=datetime(2026, 11, 25, 18),
         )
-        gasto = Gasto.registrar(
-            categoria=CategoriaGasto.REEQUIPAMIENTO_BUILDS, descripcion="",
-            monto=500_000, fecha=datetime(2026, 11, 27, 9),
-        )
-        anterior = Gasto.registrar(
-            categoria=CategoriaGasto.REPARACIONES, descripcion="",
-            monto=9_999, fecha=datetime(2026, 11, 20),
-        )
+        gasto = Gasto(CategoriaGasto.REEQUIPAMIENTO_BUILDS, "", 500_000, datetime(2026, 11, 27, 9))
+        anterior = Gasto(CategoriaGasto.REPARACIONES, "", 9_999, datetime(2026, 11, 20))
         puntos = calcular_evolucion(inicio, [venta], [gasto, anterior])
         assert [(p.fecha.day, p.saldo) for p in puntos] == [
             (25, 120_960_000), (26, 120_960_000), (27, 120_460_000)

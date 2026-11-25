@@ -21,13 +21,9 @@ class Gasto:
     fecha: datetime
     id: int | None = None
 
-    @classmethod
-    def registrar(
-        cls, *, categoria: CategoriaGasto, descripcion: str, monto: int, fecha: datetime
-    ) -> "Gasto":
-        descripcion = descripcion.strip()
-        if monto <= 0:
+    def __post_init__(self) -> None:
+        self.descripcion = self.descripcion.strip()
+        if self.monto <= 0:
             raise ErrorDominio("El monto del gasto debe ser mayor a cero")
-        if categoria is CategoriaGasto.OTROS and not descripcion:
+        if self.categoria is CategoriaGasto.OTROS and not self.descripcion:
             raise ErrorDominio("Un gasto de categoría 'otros' necesita descripción")
-        return cls(categoria, descripcion, monto, fecha)

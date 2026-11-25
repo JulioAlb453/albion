@@ -6,6 +6,7 @@ import pytest
 from src.alertas.domain.entities.seguimiento import Seguimiento
 from src.balance.domain.entities.saldo_inicial import SaldoInicial
 from src.core.domain.errors import ErrorDominio
+from src.core.domain.services.calculadora_impuestos import DesgloseVenta, calcular_desglose
 from src.core.domain.value_objects.ciudad import Ciudad
 from src.core.domain.value_objects.tipo_venta import TipoVenta
 from src.gastos.domain.entities.gasto import CategoriaGasto, Gasto
@@ -31,22 +32,55 @@ class TestVenta:
             )
 
 
+class TestVentaNoAdmiteEstadosIlegales:
+    """El constructor es la otra puerta de entrada (p. ej. al leer de la base de datos)."""
+
+    def construir(self, **cambios):
+        datos = dict(
+            objeto=ESPADA, ciudad=Ciudad.LYMHURST, tipo=TipoVenta.ORDEN, cantidad=2,
+            precio_unitario=50_000, fecha=AHORA,
+            desglose=calcular_desglose(50_000, 2, TipoVenta.ORDEN),
+        )
+        return Venta(**(datos | cambios))
+
+    def test_orden_en_black_market(self):
+        with pytest.raises(ErrorDominio, match="Black Market"):
+            self.construir(ciudad=Ciudad.BLACK_MARKET)
+
+    def test_desglose_de_otro_precio(self):
+        with pytest.raises(ErrorDominio):
+            self.construir(precio_unitario=60_000)
+
+    def test_venta_directa_con_tarifa(self):
+        with pytest.raises(ErrorDominio):
+            self.construir(tipo=TipoVenta.DIRECTA)
+
+    def test_desglose_valido_se_acepta(self):
+        assert self.construir().desglose.neto == 93_500
+
+
+class TestDesgloseNoAdmiteEstadosIlegales:
+    def test_neto_que_no_cuadra(self):
+        with pytest.raises(ErrorDominio):
+            DesgloseVenta(bruto=100, impuesto=4, tarifa_publicacion=0, neto=50)
+
+    def test_cargo_negativo(self):
+        with pytest.raises(ErrorDominio):
+            DesgloseVenta(bruto=100, impuesto=-4, tarifa_publicacion=0, neto=104)
+
+
 class TestGasto:
     def test_limpia_descripcion(self):
-        gasto = Gasto.registrar(
-            categoria=CategoriaGasto.REPARACIONES, descripcion="  ZvZ  ", monto=500, fecha=AHORA
-        )
+        gasto = Gasto(CategoriaGasto.REPARACIONES, "  ZvZ  ", 500, AHORA)
         assert gasto.descripcion == "ZvZ"
 
     def test_otros_exige_descripcion(self):
         with pytest.raises(ErrorDominio):
-            Gasto.registrar(categoria=CategoriaGasto.OTROS, descripcion=" ", monto=500, fecha=AHORA)
+            Gasto(CategoriaGasto.OTROS, " ", 500, AHORA)
 
     def test_monto_positivo(self):
         with pytest.raises(ErrorDominio):
-            Gasto.registrar(
-                categoria=CategoriaGasto.COMPRA_EQUIPO, descripcion="", monto=0, fecha=AHORA
-            )
+            Gasto(CategoriaGasto.COMPRA_EQUIPO, "", 0, AHORA)
 
 
 def test_saldo_inicial_no_negativo():

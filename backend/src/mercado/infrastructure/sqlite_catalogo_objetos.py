@@ -1,17 +1,8 @@
-import unicodedata
-
+from src.core.application.texto import normalizar_texto as normalizar
 from src.core.infrastructure.database import Database
 from src.core.infrastructure.sql import clausula_where
 from src.mercado.domain.entities.objeto import CategoriaObjeto, Objeto
 from src.mercado.domain.ports.i_catalogo_objetos import ICatalogoObjetos
-
-
-def normalizar(texto: str) -> str:
-    """Minúsculas y sin tildes, para que "baculo" encuentre "Báculo"."""
-    sin_tildes = "".join(
-        c for c in unicodedata.normalize("NFD", texto) if not unicodedata.combining(c)
-    )
-    return sin_tildes.casefold()
 
 
 def _como_literal(texto: str) -> str:

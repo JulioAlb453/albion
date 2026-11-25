@@ -7,6 +7,7 @@ from src.alertas.domain.ports.i_alerta_repository import IAlertaRepository
 from src.alertas.domain.ports.i_notificador_alertas import INotificadorAlertas
 from src.alertas.domain.ports.i_seguimiento_repository import ISeguimientoRepository
 from src.balance.domain.ports.i_saldo_inicial_repository import ISaldoInicialRepository
+from src.core.domain.errors import ServicioExternoNoDisponible, SesionInvalida
 from src.core.domain.ports.i_reloj import IReloj
 from src.gastos.domain.ports.i_gasto_repository import FiltroGastos, IGastoRepository
 from src.mercado.domain.ports.i_catalogo_objetos import ICatalogoObjetos
@@ -14,6 +15,7 @@ from src.mercado.domain.ports.i_precio_mercado_repository import IPrecioMercadoR
 from src.mercado.domain.ports.i_proveedor_precios import IProveedorPrecios
 from src.usuarios.domain.entities.usuario import Rol, Usuario
 from src.usuarios.domain.ports.i_directorio_roles import IDirectorioRoles
+from src.usuarios.domain.ports.i_proveedor_identidad import IProveedorIdentidad
 from src.usuarios.domain.ports.i_usuario_repository import IUsuarioRepository
 from src.ventas.domain.ports.i_venta_repository import FiltroVentas, IVentaRepository
 from tests.domain.fixtures import AHORA
@@ -120,8 +122,11 @@ class ProveedorPreciosFalso(IProveedorPrecios):
     def __init__(self, precios=()):
         self.precios = [*precios]
         self.llamadas = []  # un conjunto de objetos por cada consulta a la API
+        self.fallo = None   # una excepción que lanzar, para simular que la API se cae
 
     async def obtener_precios(self, objetos, ciudades):
+        if self.fallo is not None:
+            raise self.fallo
         objetos, ciudades = set(objetos), set(ciudades)
         self.llamadas.append(objetos)
         return [p for p in self.precios if p.objeto in objetos and p.ciudad in ciudades]
@@ -208,3 +213,21 @@ class DirectorioRolesMemoria(IDirectorioRoles):
 
     async def rol_de(self, discord_id):
         return self.roles.get(discord_id)
+
+
+class ProveedorIdentidadFalso(IProveedorIdentidad):
+    """`identidades` va de código de autorización a la identidad que Discord devolvería."""
+
+    def __init__(self, identidades):
+        self.identidades = dict(identidades)
+        self.caido = False
+
+    def url_autorizacion(self, estado):
+        return f"https://discord.test/authorize?state={estado}"
+
+    async def identificar(self, codigo):
+        if self.caido:
+            raise ServicioExternoNoDisponible("Discord no responde")
+        if codigo not in self.identidades:
+            raise SesionInvalida("Discord rechazó el código")
+        return self.identidades[codigo]

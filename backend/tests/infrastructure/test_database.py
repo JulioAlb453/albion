@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
@@ -41,6 +42,30 @@ class TestDatabase:
             assert await consultar(segunda, "SELECT monto FROM saldo_inicial") == [(120,)]
         finally:
             await segunda.cerrar()
+
+    async def test_migra_una_base_de_la_version_1_conservando_las_alertas(self, tmp_path):
+        ruta = tmp_path / "vieja.db"
+        antigua = sqlite3.connect(ruta)
+        antigua.executescript(MIGRACIONES[0])
+        antigua.execute(
+            "INSERT INTO seguimientos (id, base_id, encantamiento, calidad, ciudad_referencia, "
+            "neto_minimo, activo) VALUES (1, 'T6_MAIN_SWORD', 2, 4, 'Fort Sterling', 1, 1)"
+        )
+        antigua.execute(
+            "INSERT INTO alertas (seguimiento_id, ciudad, tipo, neto_unitario, motivo, fecha) "
+            "VALUES (1, 'Caerleon', 'directa', 10, 'x', '2026-11-25T12:00:00.000000+00:00')"
+        )
+        antigua.commit()
+        antigua.close()
+
+        db = Database(ruta)
+        await db.abrir()
+        try:
+            assert await consultar(db, "SELECT base_id, encantamiento, calidad FROM alertas") == [
+                ("T6_MAIN_SWORD", 2, 4)
+            ]
+        finally:
+            await db.cerrar()
 
     async def test_si_la_sesion_falla_no_se_guarda_nada(self, db):
         with pytest.raises(RuntimeError):

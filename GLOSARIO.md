@@ -80,4 +80,16 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Caché de precios** | Último precio traído de la API por objeto, calidad y ciudad. Un precio nuevo reemplaza al anterior. | `precios_mercado` |
 | **Catálogo** | Armas, armaduras y artefactos de crafteo del juego, con su nombre en español. Se carga con `scripts/importar_catalogo.py` y no incluye variantes encantadas ni herramientas de recolección. | `SqliteCatalogoObjetos` |
 | **Sin datos** | La API marca con la fecha `0001-01-01` un precio que nadie ha reportado. En el dominio es `None`. | `_fecha` |
-| **Servicio externo no disponible** | La API de Albion o Discord no respondió bien. No es un error de la petición: la capa HTTP lo traducirá a 502. | `ServicioExternoNoDisponible` |
+| **Servicio externo no disponible** | La API de Albion o Discord no respondió bien. No es un error de la petición: la capa HTTP lo traduce a 502. | `ServicioExternoNoDisponible` |
+
+## API y arranque
+
+| Término | Significado | En el código |
+|---|---|---|
+| **Contenedor** | Raíz de composición: el único lugar que conoce las implementaciones concretas y las conecta con los casos de uso. | `Contenedor` |
+| **Externos** | Lo que vive fuera del sistema (Discord, API de Albion, reloj). En producción es real; en las pruebas son dobles. | `Externos` |
+| **Token de sesión** | JWT firmado que lleva solo el ID de Discord y las fechas. El rol se lee de la base en cada petición. Dura `GREMIO_TOKEN_HORAS`. | `EmisorTokens.emitir_sesion` |
+| **Estado (OAuth)** | Token firmado de 10 minutos que viaja a Discord y vuelve: comprueba que el regreso lo inició esta API y evita falsificaciones. | `EmisorTokens.emitir_estado` |
+| **Fragmento** | La parte de la dirección tras `#`. El resultado del login vuelve ahí (`#token=` o `#error=`) porque el navegador no la envía a ningún servidor ni queda en logs. | `router_auth.callback` |
+| **Planificador** | Ciclo que corre `RevisarAlertas` al arrancar y cada `GREMIO_INTERVALO_ALERTAS_MINUTOS`. Una falla se informa y el ciclo sigue. | `ejecutar_periodicamente` |
+| **Código de error HTTP** | 401 sin sesión, 403 sin permiso, 404 no existe, 422 regla violada o dato inválido, 502 Discord o Albion caídos. | `registrar_manejadores` |

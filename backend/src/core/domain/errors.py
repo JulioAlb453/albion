@@ -15,3 +15,7 @@ class ServicioExternoNoDisponible(Exception):
 
     No es un error de dominio: la petición era válida. La capa HTTP la traduce a 502.
     """
+
+
+class SesionInvalida(Exception):
+    """Falta iniciar sesión, o el token o el código de Discord no valen. La capa HTTP la traduce a 401."""

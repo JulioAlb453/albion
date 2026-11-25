@@ -95,7 +95,7 @@ class TestEvaluadorAlertas:
     def test_alerta_por_porcentaje(self):
         seg = Seguimiento(ESPADA, porcentaje_minimo=Decimal("15"), id=1)
         alerta = evaluar(seg, self.comparaciones(), ultima_alerta=None, ahora=AHORA)
-        assert alerta.ciudad is Ciudad.BLACK_MARKET
+        assert alerta.ciudad is Ciudad.BLACK_MARKET and alerta.objeto == ESPADA
         assert alerta.neto_unitario == 115_200 and alerta.neto_referencia == 96_000
         assert "20.0%" in alerta.motivo
 
@@ -110,7 +110,9 @@ class TestEvaluadorAlertas:
 
     def test_respeta_tiempo_de_espera(self):
         seg = Seguimiento(ESPADA, neto_minimo=1, id=1)
-        reciente = Alerta(1, Ciudad.LYMHURST, TipoVenta.DIRECTA, 1, None, "", AHORA - timedelta(minutes=30))
+        reciente = Alerta(
+            1, ESPADA, Ciudad.LYMHURST, TipoVenta.DIRECTA, 1, None, "", AHORA - timedelta(minutes=30)
+        )
         assert evaluar(seg, self.comparaciones(), ultima_alerta=reciente, ahora=AHORA) is None
 
     def test_ignora_datos_viejos(self):

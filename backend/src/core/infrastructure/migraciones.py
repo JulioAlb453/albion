@@ -89,4 +89,21 @@ PRAGMA user_version = 1;
 COMMIT;
 """
 
-MIGRACIONES: tuple[str, ...] = (_V1,)
+# La alerta guarda su objeto. Las que ya existían lo heredan de su seguimiento.
+_V2 = """
+BEGIN;
+
+ALTER TABLE alertas ADD COLUMN base_id       TEXT    NOT NULL DEFAULT '';
+ALTER TABLE alertas ADD COLUMN encantamiento INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE alertas ADD COLUMN calidad       INTEGER NOT NULL DEFAULT 1;
+
+UPDATE alertas SET
+    base_id       = (SELECT base_id       FROM seguimientos WHERE seguimientos.id = alertas.seguimiento_id),
+    encantamiento = (SELECT encantamiento FROM seguimientos WHERE seguimientos.id = alertas.seguimiento_id),
+    calidad       = (SELECT calidad       FROM seguimientos WHERE seguimientos.id = alertas.seguimiento_id);
+
+PRAGMA user_version = 2;
+COMMIT;
+"""
+
+MIGRACIONES: tuple[str, ...] = (_V1, _V2)

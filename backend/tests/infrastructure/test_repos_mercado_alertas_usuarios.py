@@ -87,7 +87,7 @@ class TestSqliteSeguimientoRepository:
     async def test_eliminarlo_borra_sus_alertas(self, db, repo):
         alertas = SqliteAlertaRepository(db)
         seguimiento = await repo.save(Seguimiento(ESPADA, neto_minimo=1))
-        await alertas.save(Alerta(seguimiento.id, Ciudad.CAERLEON, TipoVenta.DIRECTA, 10, None, "x", AHORA))
+        await alertas.save(Alerta(seguimiento.id, ESPADA, Ciudad.CAERLEON, TipoVenta.DIRECTA, 10, None, "x", AHORA))
         await repo.delete(seguimiento.id)
         assert await alertas.list_recientes() == []
 
@@ -103,7 +103,7 @@ class TestSqliteAlertaRepository:
 
     def alerta(self, seguimiento_id, minutos=0, neto_referencia=96_000):
         return Alerta(
-            seguimiento_id, Ciudad.BLACK_MARKET, TipoVenta.DIRECTA, 115_200,
+            seguimiento_id, ESPADA, Ciudad.BLACK_MARKET, TipoVenta.DIRECTA, 115_200,
             neto_referencia, "Black Market paga 20.0% más", AHORA + timedelta(minutes=minutos),
         )
 

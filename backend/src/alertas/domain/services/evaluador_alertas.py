@@ -58,6 +58,7 @@ def evaluar(
         if motivo:
             return Alerta(
                 seguimiento_id=seguimiento.id,
+                objeto=seguimiento.objeto,
                 ciudad=opcion.ciudad,
                 tipo=opcion.tipo,
                 neto_unitario=opcion.neto_unitario,

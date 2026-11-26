@@ -120,4 +120,33 @@ PRAGMA user_version = 3;
 COMMIT;
 """
 
-MIGRACIONES: tuple[str, ...] = (_V1, _V2, _V3)
+# Plata que entra sin vender objetos, y los pagos semanales a miembros.
+_V4 = """
+BEGIN;
+
+CREATE TABLE ingresos (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    categoria   TEXT    NOT NULL,
+    descripcion TEXT    NOT NULL DEFAULT '',
+    monto       INTEGER NOT NULL CHECK (monto > 0),
+    fecha       TEXT    NOT NULL
+);
+CREATE INDEX ix_ingresos_fecha ON ingresos (fecha);
+
+CREATE TABLE pagos_semanales (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    miembro     TEXT    NOT NULL,
+    monto       INTEGER NOT NULL CHECK (monto > 0),
+    semana      TEXT    NOT NULL,
+    descripcion TEXT    NOT NULL DEFAULT '',
+    pagado      INTEGER NOT NULL DEFAULT 0 CHECK (pagado >= 0 AND pagado <= monto),
+    fecha_pago  TEXT
+);
+CREATE INDEX ix_pagos_semana ON pagos_semanales (semana);
+CREATE INDEX ix_pagos_fecha_pago ON pagos_semanales (fecha_pago);
+
+PRAGMA user_version = 4;
+COMMIT;
+"""
+
+MIGRACIONES: tuple[str, ...] = (_V1, _V2, _V3, _V4)

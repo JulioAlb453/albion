@@ -43,6 +43,15 @@ from src.usuarios.domain.ports.i_directorio_roles import IDirectorioRoles
 from src.usuarios.domain.ports.i_proveedor_identidad import IProveedorIdentidad
 from src.usuarios.infrastructure.emisor_tokens import EmisorTokens
 from src.usuarios.infrastructure.sqlite_usuario_repository import SqliteUsuarioRepository
+from src.ingresos.application.casos_de_uso import EliminarIngreso, ListarIngresos, RegistrarIngreso
+from src.ingresos.infrastructure.sqlite_ingreso_repository import SqliteIngresoRepository
+from src.pagos.application.casos_de_uso import (
+    AsignarPagoSemanal,
+    EliminarPagoSemanal,
+    ListarPagosSemanales,
+    RegistrarPagoSemanal,
+)
+from src.pagos.infrastructure.sqlite_pago_semanal_repository import SqlitePagoSemanalRepository
 from src.ventas.application.corregir_venta_use_case import CorregirVenta
 from src.ventas.application.eliminar_venta_use_case import EliminarVenta
 from src.ventas.application.importar_ventas_use_case import ImportarVentas
@@ -102,6 +111,15 @@ class Contenedor:
         self.eliminar_gasto = EliminarGasto(gastos)
         self.importar_gastos = ImportarGastos(gastos, reloj)
 
+        ingresos, pagos = SqliteIngresoRepository(db), SqlitePagoSemanalRepository(db)
+        self.registrar_ingreso = RegistrarIngreso(ingresos, reloj)
+        self.listar_ingresos = ListarIngresos(ingresos)
+        self.eliminar_ingreso = EliminarIngreso(ingresos)
+        self.asignar_pago = AsignarPagoSemanal(pagos, reloj)
+        self.registrar_pago = RegistrarPagoSemanal(pagos, reloj)
+        self.listar_pagos = ListarPagosSemanales(pagos)
+        self.eliminar_pago = EliminarPagoSemanal(pagos)
+
         self.buscar_objetos = BuscarObjetos(self.catalogo)
         self.obtener_objeto = ObtenerObjeto(self.catalogo)
         self.obtener_nombres = ObtenerNombresObjetos(self.catalogo)
@@ -110,8 +128,8 @@ class Contenedor:
 
         self.configurar_saldo_inicial = ConfigurarSaldoInicial(saldos)
         self.obtener_saldo_inicial = ObtenerSaldoInicial(saldos)
-        self.obtener_evolucion = ObtenerEvolucionBalance(saldos, ventas, gastos, reloj)
-        self.obtener_reportes = ObtenerReportes(ventas, gastos)
+        self.obtener_evolucion = ObtenerEvolucionBalance(saldos, ventas, gastos, reloj, ingresos, pagos)
+        self.obtener_reportes = ObtenerReportes(ventas, gastos, ingresos, pagos)
 
         self.crear_seguimiento = CrearSeguimiento(seguimientos)
         self.listar_seguimientos = ListarSeguimientos(seguimientos)

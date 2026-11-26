@@ -6,6 +6,8 @@ from src.balance.domain.services.calculadora_balance import calcular_evolucion
 from src.core.domain.errors import EntidadNoEncontrada
 from src.core.domain.ports.i_reloj import IReloj
 from src.gastos.domain.ports.i_gasto_repository import FiltroGastos, IGastoRepository
+from src.ingresos.domain.ports.i_ingreso_repository import FiltroIngresos, IIngresoRepository
+from src.pagos.domain.ports.i_pago_semanal_repository import FiltroPagos, IPagoSemanalRepository
 from src.ventas.domain.ports.i_venta_repository import FiltroVentas, IVentaRepository
 
 
@@ -16,7 +18,11 @@ class ObtenerEvolucionBalance:
         ventas: IVentaRepository,
         gastos: IGastoRepository,
         reloj: IReloj,
+        ingresos: IIngresoRepository,
+        pagos: IPagoSemanalRepository,
     ):
+        self._ingresos = ingresos
+        self._pagos = pagos
         self._saldos = saldos
         self._ventas = ventas
         self._gastos = gastos
@@ -29,4 +35,8 @@ class ObtenerEvolucionBalance:
         desde = datetime.combine(saldo.fecha, time.min, tzinfo=UTC)
         ventas = await self._ventas.list(FiltroVentas(desde=desde))
         gastos = await self._gastos.list(FiltroGastos(desde=desde))
-        return calcular_evolucion(saldo, ventas, gastos, hasta or self._reloj.ahora().date())
+        ingresos = await self._ingresos.list(FiltroIngresos(desde=desde))
+        pagos = await self._pagos.list(FiltroPagos(pagado_desde=desde))
+        return calcular_evolucion(
+            saldo, ventas, gastos, hasta or self._reloj.ahora().date(), ingresos=ingresos, pagos=pagos
+        )

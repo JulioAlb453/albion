@@ -15,6 +15,8 @@ from src.gastos.domain.entities.gasto import CategoriaGasto
 from src.ventas.application.datos_venta import DatosVenta
 from src.ventas.application.registrar_venta_use_case import RegistrarVenta
 from tests.application.fakes import (
+    IngresoRepoMemoria,
+    PagoRepoMemoria,
     ADMIN,
     GENERAL,
     GastoRepoMemoria,
@@ -78,13 +80,13 @@ class Movimientos:
 class TestObtenerEvolucionBalance(Movimientos):
     async def test_sin_saldo_inicial_no_hay_balance(self):
         await self.preparar(saldo=None)
-        caso = ObtenerEvolucionBalance(self.saldos, self.ventas, self.gastos, self.reloj)
+        caso = ObtenerEvolucionBalance(self.saldos, self.ventas, self.gastos, self.reloj, IngresoRepoMemoria(), PagoRepoMemoria())
         with pytest.raises(EntidadNoEncontrada):
             await caso.ejecutar()
 
     async def test_evoluciona_hasta_hoy_ignorando_lo_anterior_y_lo_futuro(self):
         await self.preparar()
-        caso = ObtenerEvolucionBalance(self.saldos, self.ventas, self.gastos, self.reloj)
+        caso = ObtenerEvolucionBalance(self.saldos, self.ventas, self.gastos, self.reloj, IngresoRepoMemoria(), PagoRepoMemoria())
         puntos = await caso.ejecutar()
         assert [(p.fecha.day, p.saldo) for p in puntos] == [
             (25, 120_960_000), (26, 120_960_000), (27, 120_460_000), (28, 120_460_000)
@@ -92,7 +94,7 @@ class TestObtenerEvolucionBalance(Movimientos):
 
     async def test_se_puede_pedir_otra_fecha_final(self):
         await self.preparar()
-        caso = ObtenerEvolucionBalance(self.saldos, self.ventas, self.gastos, self.reloj)
+        caso = ObtenerEvolucionBalance(self.saldos, self.ventas, self.gastos, self.reloj, IngresoRepoMemoria(), PagoRepoMemoria())
         puntos = await caso.ejecutar(hasta=date(2026, 11, 30))
         assert puntos[-1].saldo == 120_556_000
 
@@ -100,14 +102,14 @@ class TestObtenerEvolucionBalance(Movimientos):
 class TestObtenerReportes(Movimientos):
     async def test_resume_todo_el_periodo(self):
         await self.preparar()
-        reportes = await ObtenerReportes(self.ventas, self.gastos).ejecutar()
+        reportes = await ObtenerReportes(self.ventas, self.gastos, IngresoRepoMemoria(), PagoRepoMemoria()).ejecutar()
         assert reportes.ventas_netas == 1_056_000
         assert reportes.gastos_totales == 509_999
         assert reportes.ganancia_por_objeto[0].unidades == 2
 
     async def test_filtra_por_rango_con_fechas_sin_zona(self):
         await self.preparar()
-        reportes = await ObtenerReportes(self.ventas, self.gastos).ejecutar(
+        reportes = await ObtenerReportes(self.ventas, self.gastos, IngresoRepoMemoria(), PagoRepoMemoria()).ejecutar(
             desde=datetime(2026, 11, 26), hasta=datetime(2026, 12, 1)
         )
         assert reportes.ventas_netas == 96_000

@@ -17,6 +17,8 @@ from src.usuarios.domain.entities.usuario import Rol, Usuario
 from src.usuarios.domain.ports.i_directorio_roles import IDirectorioRoles
 from src.usuarios.domain.ports.i_proveedor_identidad import IProveedorIdentidad
 from src.usuarios.domain.ports.i_usuario_repository import IUsuarioRepository
+from src.ingresos.domain.ports.i_ingreso_repository import FiltroIngresos, IIngresoRepository
+from src.pagos.domain.ports.i_pago_semanal_repository import FiltroPagos, IPagoSemanalRepository
 from src.ventas.domain.ports.i_venta_repository import FiltroVentas, IVentaRepository
 from tests.domain.fixtures import AHORA
 
@@ -104,6 +106,47 @@ class GastoRepoMemoria(_Memoria, IGastoRepository):
             g for g in self.items.values()
             if _en_rango(g.fecha, filtro.desde, filtro.hasta)
             and filtro.categoria in (None, g.categoria)
+        ]
+
+
+class IngresoRepoMemoria(_Memoria, IIngresoRepository):
+    async def save(self, ingreso):
+        return self._guardar(ingreso)
+
+    async def get_by_id(self, ingreso_id):
+        return self.items.get(ingreso_id)
+
+    async def delete(self, ingreso_id):
+        self.items.pop(ingreso_id, None)
+
+    async def list(self, filtro=FiltroIngresos()):
+        return [
+            i for i in self.items.values()
+            if _en_rango(i.fecha, filtro.desde, filtro.hasta) and filtro.categoria in (None, i.categoria)
+        ]
+
+
+class PagoRepoMemoria(_Memoria, IPagoSemanalRepository):
+    async def save(self, pago):
+        import dataclasses
+        if pago.id is None:
+            pago = dataclasses.replace(pago, id=self._siguiente)
+            self._siguiente += 1
+        self.items[pago.id] = pago
+        return pago
+
+    async def get_by_id(self, pago_id):
+        return self.items.get(pago_id)
+
+    async def delete(self, pago_id):
+        self.items.pop(pago_id, None)
+
+    async def list(self, filtro=FiltroPagos()):
+        return [
+            p for p in self.items.values()
+            if filtro.semana in (None, p.semana)
+            and (filtro.pagado_desde is None and filtro.pagado_hasta is None
+                 or p.fecha_pago is not None and _en_rango(p.fecha_pago, filtro.pagado_desde, filtro.pagado_hasta))
         ]
 
 

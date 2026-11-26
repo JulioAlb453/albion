@@ -4,6 +4,8 @@ from collections.abc import Iterable
 from src.balance.domain.entities.reportes import GananciaObjeto, Reportes, ResumenImpuestos
 from src.core.domain.value_objects.objeto_ref import ObjetoRef
 from src.gastos.domain.entities.gasto import CategoriaGasto, Gasto
+from src.ingresos.domain.entities.ingreso import CategoriaIngreso, Ingreso
+from src.pagos.domain.entities.pago_semanal import PagoSemanal
 from src.ventas.domain.entities.venta import Venta
 
 
@@ -40,7 +42,19 @@ def gastos_por_categoria(gastos: Iterable[Gasto]) -> dict[CategoriaGasto, int]:
     return dict(sorted(totales.items(), key=lambda par: par[1], reverse=True))
 
 
-def generar_reportes(ventas: Iterable[Venta], gastos: Iterable[Gasto]) -> Reportes:
+def ingresos_por_categoria(ingresos: Iterable[Ingreso]) -> dict[CategoriaIngreso, int]:
+    totales: dict[CategoriaIngreso, int] = defaultdict(int)
+    for ingreso in ingresos:
+        totales[ingreso.categoria] += ingreso.monto
+    return dict(sorted(totales.items(), key=lambda par: par[1], reverse=True))
+
+
+def generar_reportes(
+    ventas: Iterable[Venta],
+    gastos: Iterable[Gasto],
+    ingresos: Iterable[Ingreso] = (),
+    pagos: Iterable[PagoSemanal] = (),
+) -> Reportes:
     ventas, gastos = list(ventas), list(gastos)
     return Reportes(
         ganancia_por_objeto=ganancia_por_objeto(ventas),
@@ -48,4 +62,6 @@ def generar_reportes(ventas: Iterable[Venta], gastos: Iterable[Gasto]) -> Report
         gastos_por_categoria=gastos_por_categoria(gastos),
         ventas_netas=sum(v.desglose.neto for v in ventas),
         gastos_totales=sum(g.monto for g in gastos),
+        ingresos_por_categoria=ingresos_por_categoria(ingresos),
+        pagos_semanales=sum(p.pagado for p in pagos),
     )

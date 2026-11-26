@@ -11,7 +11,9 @@ from src.bootstrap.contenedor import Contenedor
 from src.bootstrap.planificador import ejecutar_periodicamente
 from src.core.infrastructure.http.errores import registrar_manejadores
 from src.gastos.infrastructure.http.router_gastos import router as router_gastos
+from src.ingresos.infrastructure.http.router_ingresos import router as router_ingresos
 from src.mercado.infrastructure.http.router_mercado import router as router_mercado
+from src.pagos.infrastructure.http.router_pagos import router as router_pagos
 from src.usuarios.infrastructure.http.router_auth import router as router_auth
 from src.ventas.infrastructure.http.router_ventas import router as router_ventas
 
@@ -58,6 +60,9 @@ def crear_app(contenedor: Contenedor, con_planificador: bool = False) -> FastAPI
         expose_headers=["Content-Disposition"],  # para que el frontend lea el nombre del archivo
     )
     registrar_manejadores(app)
-    for router in (router_auth, router_ventas, router_gastos, router_mercado, router_balance, router_alertas):
+    for router in (
+        router_auth, router_ventas, router_gastos, router_ingresos, router_pagos,
+        router_mercado, router_balance, router_alertas,
+    ):
         app.include_router(router)
     return app

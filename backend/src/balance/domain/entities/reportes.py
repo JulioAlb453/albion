@@ -1,7 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from src.core.domain.value_objects.objeto_ref import ObjetoRef
 from src.gastos.domain.entities.gasto import CategoriaGasto
+from src.ingresos.domain.entities.ingreso import CategoriaIngreso
 
 
 @dataclass(frozen=True)
@@ -36,7 +37,13 @@ class Reportes:
     gastos_por_categoria: dict[CategoriaGasto, int]  # de mayor a menor monto
     ventas_netas: int
     gastos_totales: int
+    ingresos_por_categoria: dict[CategoriaIngreso, int] = field(default_factory=dict)  # de mayor a menor
+    pagos_semanales: int = 0  # lo pagado a miembros en el periodo
+
+    @property
+    def ingresos_extra(self) -> int:
+        return sum(self.ingresos_por_categoria.values())
 
     @property
     def resultado(self) -> int:
-        return self.ventas_netas - self.gastos_totales
+        return self.ventas_netas + self.ingresos_extra - self.gastos_totales - self.pagos_semanales

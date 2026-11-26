@@ -44,6 +44,9 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 |---|---|---|
 | **Venta** | Venta registrada de un objeto. Guarda su desglose. | `Venta` |
 | **Gasto** | Salida de plata, con categoría: compra de equipo, reparaciones, reequipamiento de builds, ingredientes para comida u otros (este último exige descripción). | `Gasto`, `CategoriaGasto` |
+| **Otro ingreso** | Plata que entra al gremio sin vender objetos: donación, territorios y temporada, botín en plata u otros (este último exige descripción). Suma al saldo y al resultado. | `Ingreso`, `CategoriaIngreso` |
+| **Pago semanal** | Plata asignada a un miembro para una semana de lunes a domingo (hora del servidor, UTC). Se registra el total pagado y su fecha, que debe caer en esa semana; un pago parcial se corrige cambiando el total. Solo lo pagado sale del saldo. | `PagoSemanal` |
+| **No reclamado** | Lo que un miembro no cobró de su pago semanal cuando terminó el domingo. Se queda en el gremio. | `PagoSemanal.no_reclamado` |
 | **Reequipamiento** | *Regear*: reponer el equipo que los miembros pierden en combate. | `CategoriaGasto.REEQUIPAMIENTO_BUILDS` |
 | **Saldo inicial** | Plata del gremio el día en que empieza el registro (120 M). Los movimientos anteriores ya están contados en él. | `SaldoInicial` |
 | **Punto de balance** | Ingresos netos, gastos y saldo al cierre de un día. | `PuntoBalance` |
@@ -69,7 +72,7 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Actualizar precios** | Traer de la API los precios de un lote de objetos y reemplazar los guardados. | `ActualizarPrecios` |
 | **Revisión de alertas** | Tarea periódica: actualiza los precios de los seguimientos con una sola consulta y avisa de los que cumplen su criterio. | `RevisarAlertas` |
 | **Ganancia por objeto** | Neto de las ventas de un objeto concreto. No resta costos, porque el gremio no registra cuánto costó cada objeto. | `GananciaObjeto` |
-| **Resultado** | Ventas netas menos gastos de un periodo. | `Reportes.resultado` |
+| **Resultado** | Ventas netas más otros ingresos, menos gastos y pagos semanales de un periodo. | `Reportes.resultado` |
 
 ## Infraestructura
 

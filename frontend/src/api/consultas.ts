@@ -5,7 +5,8 @@ import { guardarArchivo } from "../util/descargar";
 import { useCliente } from "./ContextoApi";
 import { ErrorApi, type Cliente, type Parametros } from "./cliente";
 import type {
-  Alerta, CategoriaGasto, CategoriaObjeto, Ciudad, Comparacion, Gasto, NuevaVenta, NuevoGasto,
+  Alerta, CategoriaGasto, CategoriaIngreso, CategoriaObjeto, Ciudad, Comparacion, Gasto, Ingreso,
+  NuevaAsignacion, NuevaVenta, NuevoGasto, NuevoIngreso, PagoSemanal,
   NuevoSeguimiento, ObjetoCatalogo, PuntoBalance, Reportes, ResultadoImportacion, SaldoInicial,
   Seguimiento, TipoVenta, Venta,
 } from "./tipos";
@@ -173,6 +174,68 @@ export function useEliminarGasto() {
   return useMutation({
     mutationFn: (id: number) => c.delete(`/api/gastos/${id}`),
     onSuccess: () => invalidar("gastos", "reportes", "evolucion"),
+  });
+}
+
+export type FiltroIngresos = { desde?: string; hasta?: string; categoria?: CategoriaIngreso | "" };
+
+export function useIngresos(filtro: FiltroIngresos = {}) {
+  const c = useCliente();
+  return useQuery({ queryKey: ["ingresos", filtro], queryFn: () => c.get<Ingreso[]>("/api/ingresos", filtro) });
+}
+
+export function useRegistrarIngreso() {
+  const c = useCliente();
+  const invalidar = useInvalidar();
+  return useMutation({
+    mutationFn: (ingreso: NuevoIngreso) => c.post<Ingreso>("/api/ingresos", ingreso),
+    onSuccess: () => invalidar("ingresos", "reportes", "evolucion"),
+  });
+}
+
+export function useEliminarIngreso() {
+  const c = useCliente();
+  const invalidar = useInvalidar();
+  return useMutation({
+    mutationFn: (id: number) => c.delete(`/api/ingresos/${id}`),
+    onSuccess: () => invalidar("ingresos", "reportes", "evolucion"),
+  });
+}
+
+/** Los pagos de la semana que contiene ese día ("2026-11-25"). */
+export function usePagosSemanales(semana: string) {
+  const c = useCliente();
+  return useQuery({
+    queryKey: ["pagos", semana],
+    queryFn: () => c.get<PagoSemanal[]>("/api/pagos-semanales", { semana }),
+  });
+}
+
+export function useAsignarPago() {
+  const c = useCliente();
+  const invalidar = useInvalidar();
+  return useMutation({
+    mutationFn: (asignacion: NuevaAsignacion) => c.post<PagoSemanal>("/api/pagos-semanales", asignacion),
+    onSuccess: () => invalidar("pagos"),
+  });
+}
+
+export function useRegistrarPago() {
+  const c = useCliente();
+  const invalidar = useInvalidar();
+  return useMutation({
+    mutationFn: ({ id, pagado, fecha_pago }: { id: number; pagado: number; fecha_pago?: string }) =>
+      c.patch<PagoSemanal>(`/api/pagos-semanales/${id}`, { pagado, ...(fecha_pago ? { fecha_pago } : {}) }),
+    onSuccess: () => invalidar("pagos", "reportes", "evolucion"),
+  });
+}
+
+export function useEliminarPago() {
+  const c = useCliente();
+  const invalidar = useInvalidar();
+  return useMutation({
+    mutationFn: (id: number) => c.delete(`/api/pagos-semanales/${id}`),
+    onSuccess: () => invalidar("pagos", "reportes", "evolucion"),
   });
 }
 

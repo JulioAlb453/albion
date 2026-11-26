@@ -4,6 +4,7 @@ import { CIUDADES, TIPOS_VENTA, type Ciudad, type TipoVenta, type Venta } from "
 import { CargaFallida } from "../componentes/CargaFallida";
 import { DialogoImportar } from "../componentes/DialogoImportar";
 import { FormularioCorregirVenta } from "../componentes/FormularioCorregirVenta";
+import { OtrosIngresos } from "../componentes/OtrosIngresos";
 import { useSesion } from "../sesion/ContextoSesion";
 import { useAvisos } from "../ui/Avisos";
 import { Bloque, Plata, Vacio } from "../ui/Bloque";
@@ -200,6 +201,8 @@ export function Ventas() {
         importar={(archivo) => importar.mutateAsync(archivo)}
         descargarPlantilla={() => void descargar("/api/ventas/plantilla")}
       />
+      <OtrosIngresos />
+
       <Cajon abierto={corrigiendo !== null} titulo="Corregir venta" alCerrar={() => setCorrigiendo(null)}>
         {corrigiendo && (
           <FormularioCorregirVenta key={corrigiendo.id} venta={corrigiendo} alTerminar={() => setCorrigiendo(null)} />

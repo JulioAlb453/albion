@@ -15,6 +15,7 @@ const VENTAS = [
 ];
 const RUTAS = {
   "GET /api/ventas": VENTAS,
+  "GET /api/ingresos": [],
   "DELETE /api/ventas/1": new Response(null, { status: 204 }),
 };
 const ultima = (llamadas: ReturnType<typeof instalarApi>, ruta = "/api/ventas") => llamadas.filter((l) => l.ruta === ruta).at(-1)!;
@@ -56,8 +57,8 @@ describe("lista", () => {
   it("si la lista no carga lo dice y deja reintentar", async () => {
     instalarApi({});
     montarPagina(<Ventas />);
-    expect(await screen.findByText(/no se pudo cargar las ventas/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /reintentar/i })).toBeInTheDocument();
+    const aviso = (await screen.findByText(/no se pudo cargar las ventas/i)).closest("[role=alert]") as HTMLElement;
+    expect(within(aviso).getByRole("button", { name: /reintentar/i })).toBeInTheDocument();
   });
 });
 

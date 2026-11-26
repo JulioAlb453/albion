@@ -157,7 +157,63 @@ export interface Reportes {
   gastos_por_categoria: { categoria: CategoriaGasto; monto: number }[];
   ventas_netas: number;
   gastos_totales: number;
+  ingresos_extra: number; // plata que entró sin vender objetos
+  ingresos_por_categoria: { categoria: CategoriaIngreso; monto: number }[];
+  pagos_semanales: number; // lo pagado a miembros
   resultado: number;
+}
+
+export const CATEGORIAS_INGRESO = {
+  donacion: "Donación",
+  territorios: "Territorios y temporada",
+  botin: "Botín en plata",
+  otros: "Otros",
+} as const;
+export type CategoriaIngreso = keyof typeof CATEGORIAS_INGRESO;
+
+/** Plata que entra al gremio sin vender objetos. */
+export interface Ingreso {
+  id: number;
+  categoria: CategoriaIngreso;
+  descripcion: string;
+  monto: number;
+  fecha: string;
+}
+
+export interface NuevoIngreso {
+  categoria: CategoriaIngreso;
+  descripcion: string;
+  monto: number;
+  fecha?: string;
+}
+
+export const ESTADOS_PAGO = {
+  pendiente: "Pendiente",
+  parcial: "Pago parcial",
+  pagado: "Pagado",
+  no_reclamado: "No reclamado",
+} as const;
+export type EstadoPago = keyof typeof ESTADOS_PAGO;
+
+/** Plata asignada a un miembro para una semana (lunes a domingo, hora del servidor). */
+export interface PagoSemanal {
+  id: number;
+  miembro: string;
+  monto: number; // lo asignado
+  descripcion: string;
+  semana: string; // el lunes, "2026-11-23"
+  fin_semana: string; // el domingo
+  pagado: number;
+  fecha_pago: string | null;
+  estado: EstadoPago;
+  no_reclamado: number; // lo que se queda el gremio porque la semana terminó sin cobrarlo
+}
+
+export interface NuevaAsignacion {
+  miembro: string;
+  monto: number;
+  semana?: string; // cualquier día de la semana
+  descripcion?: string;
 }
 
 export interface Seguimiento {

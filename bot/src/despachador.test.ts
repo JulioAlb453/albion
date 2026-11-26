@@ -9,6 +9,7 @@ const ahora = () => new Date("2026-11-25T12:00:00Z");
 const SIN_REPORTE = {
   ganancia_por_objeto: [], impuestos: { impuesto_venta: 0, tarifa_publicacion: 0, total: 0 },
   gastos_por_categoria: [], ventas_netas: 0, gastos_totales: 0, resultado: 0,
+  ingresos_extra: 0, ingresos_por_categoria: [], pagos_semanales: 0,
 };
 
 describe("definiciones (límites de Discord)", () => {

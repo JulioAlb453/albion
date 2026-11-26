@@ -83,6 +83,8 @@ export function Reportes() {
             <p className="texto-2">
               {plataCorta(datos.ventas_netas)} de ventas netas − {plataCorta(datos.gastos_totales)} de gastos
             </p>
+            {datos.ingresos_extra > 0 && <p className="texto-2">+ {plataCorta(datos.ingresos_extra)} de otros ingresos</p>}
+            {datos.pagos_semanales > 0 && <p className="texto-2">− {plataCorta(datos.pagos_semanales)} de pagos semanales</p>}
           </Bloque>
 
           <Bloque titulo="Impuestos pagados" columnas={4}>

@@ -18,6 +18,12 @@ export const balance: Comando = {
           { name: "Saldo", value: plataCorta(saldo), inline: true },
           { name: "Ventas netas", value: plataCorta(reporte.ventas_netas), inline: true },
           { name: "Gastos", value: plataCorta(reporte.gastos_totales), inline: true },
+          ...(reporte.ingresos_extra > 0
+            ? [{ name: "Otros ingresos", value: plataCorta(reporte.ingresos_extra), inline: true }]
+            : []),
+          ...(reporte.pagos_semanales > 0
+            ? [{ name: "Pagos semanales", value: plataCorta(reporte.pagos_semanales), inline: true }]
+            : []),
           { name: "Resultado", value: signo(reporte.resultado), inline: true },
           { name: "Impuestos y tarifas", value: plataCorta(reporte.impuestos.total), inline: true },
         ],

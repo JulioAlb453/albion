@@ -4,6 +4,7 @@ import { CATEGORIAS_GASTO, type CategoriaGasto } from "../api/tipos";
 import { CargaFallida } from "../componentes/CargaFallida";
 import { DialogoImportar } from "../componentes/DialogoImportar";
 import { FormularioGasto } from "../componentes/FormularioGasto";
+import { PagosSemanales } from "../componentes/PagosSemanales";
 import { useSesion } from "../sesion/ContextoSesion";
 import { useAvisos } from "../ui/Avisos";
 import { Bloque, Insignia, Plata, Vacio } from "../ui/Bloque";
@@ -152,6 +153,8 @@ export function Gastos() {
           </div>
         )}
       </Bloque>
+
+      <PagosSemanales />
 
       <Cajon abierto={registrando} titulo="Registrar gasto" alCerrar={() => setRegistrando(false)}>
         <FormularioGasto alTerminar={() => setRegistrando(false)} />

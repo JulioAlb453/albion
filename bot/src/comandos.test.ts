@@ -12,6 +12,7 @@ const EFIMERO = 64;
 const SIN_REPORTE = {
   ganancia_por_objeto: [], impuestos: { impuesto_venta: 0, tarifa_publicacion: 0, total: 0 },
   gastos_por_categoria: [], ventas_netas: 0, gastos_totales: 0, resultado: 0,
+  ingresos_extra: 0, ingresos_por_categoria: [], pagos_semanales: 0,
 };
 
 describe("/precio", () => {
@@ -86,6 +87,18 @@ describe("/balance", () => {
     expect(llamadas[0]?.opciones).toEqual({ flags: EFIMERO });
     expect(texto()).toContain("120.6 M");
     expect(texto()).toContain("+1.6 M");
+    expect(texto()).not.toContain("Pagos semanales");
+  });
+
+  it("muestra otros ingresos y pagos semanales cuando los hay", async () => {
+    const api = apiFalsa({
+      saldoInicial: async () => ({ monto: 1, fecha: "2026-11-25" }), evolucion: async () => [],
+      reportes: async () => ({ ...SIN_REPORTE, ingresos_extra: 2_000_000, pagos_semanales: 300_000, resultado: 1_700_000 }),
+    });
+    const { i, texto } = interaccion();
+    await balance.ejecutar(i, contexto(api));
+    expect(texto()).toMatch(/Otros ingresos.*2 M/);
+    expect(texto()).toMatch(/Pagos semanales.*300 k/);
   });
 
   it("sin saldo inicial explica cómo configurarlo, sin romperse", async () => {

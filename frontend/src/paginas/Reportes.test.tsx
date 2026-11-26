@@ -22,6 +22,9 @@ const DATOS: TipoReportes = {
   ],
   ventas_netas: 381_500,
   gastos_totales: 500_000,
+  ingresos_extra: 0,
+  ingresos_por_categoria: [],
+  pagos_semanales: 0,
   resultado: -118_500,
 };
 const RUTAS = { "GET /api/reportes": DATOS };
@@ -38,6 +41,16 @@ describe("resumen", () => {
     expect(await resultado.findByTitle("-118,500")).toHaveTextContent("-118.5 k");
     expect(resultado.getByText(/381\.5 k de ventas netas/)).toBeInTheDocument();
     expect(resultado.getByText(/500 k de gastos/)).toBeInTheDocument();
+    // sin otros ingresos ni pagos semanales no se mencionan
+    expect(resultado.queryByText(/otros ingresos|pagos semanales/i)).not.toBeInTheDocument();
+  });
+
+  it("el resultado suma otros ingresos y resta pagos semanales", async () => {
+    instalarApi({ "GET /api/reportes": { ...DATOS, ingresos_extra: 2_000_000, ingresos_por_categoria: [{ categoria: "donacion", monto: 2_000_000 }], pagos_semanales: 300_000, resultado: 1_581_500 } });
+    montarPagina(<Reportes />);
+    const resultado = await bloque("Resultado del periodo");
+    expect(await resultado.findByText(/\+ 2 M de otros ingresos/)).toBeInTheDocument();
+    expect(resultado.getByText(/− 300 k de pagos semanales/)).toBeInTheDocument();
   });
 
   it("dice cuánto se pagó en impuestos y qué parte de lo vendido se fue en ellos", async () => {

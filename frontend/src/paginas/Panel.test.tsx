@@ -19,6 +19,9 @@ const REPORTES: Reportes = {
   ],
   ventas_netas: 1_053_500,
   gastos_totales: 500_000,
+  ingresos_extra: 0,
+  ingresos_por_categoria: [],
+  pagos_semanales: 0,
   resultado: 553_500,
 };
 const ARMADURA = { ...OBJETO_ESPADA, base_id: "T6_ARMOR_PLATE_SET1", nombre: "Armadura de soldado del maestro", etiqueta: "T6.0" };

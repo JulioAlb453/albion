@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
 from src.alertas.application.crear_seguimiento_use_case import CrearSeguimiento
@@ -20,6 +21,7 @@ from src.balance.infrastructure.sqlite_saldo_inicial_repository import SqliteSal
 from src.bootstrap.configuracion import Configuracion
 from src.core.domain.ports.i_reloj import IReloj
 from src.core.infrastructure.database import Database
+from src.core.infrastructure.respaldo_sqlite import RespaldoSqlite
 from src.gastos.application.eliminar_gasto_use_case import EliminarGasto
 from src.gastos.application.importar_gastos_use_case import ImportarGastos
 from src.gastos.application.listar_gastos_use_case import ListarGastos
@@ -76,6 +78,11 @@ class Contenedor:
         self._recursos = recursos
         reloj = self.reloj = externos.reloj
         self.emisor_tokens = EmisorTokens(config.secreto_jwt, config.token_horas, reloj)
+        self.respaldo = (
+            RespaldoSqlite(db, Path(config.respaldos_dir), reloj, config.respaldos_conservar)
+            if config.respaldos_conservar > 0
+            else None
+        )
 
         ventas, gastos = SqliteVentaRepository(db), SqliteGastoRepository(db)
         saldos, precios = SqliteSaldoInicialRepository(db), SqlitePrecioMercadoRepository(db)
@@ -112,9 +119,9 @@ class Contenedor:
             seguimientos, alertas, precios, self.actualizar_precios, externos.notificador, reloj
         )
 
-        iniciar_sesion = IniciarSesion(self.usuarios, externos.directorio_roles)
+        self.iniciar_sesion = IniciarSesion(self.usuarios, externos.directorio_roles)
         self.iniciar_sesion_con_discord = IniciarSesionConDiscord(
-            externos.proveedor_identidad, iniciar_sesion
+            externos.proveedor_identidad, self.iniciar_sesion
         )
 
     async def cerrar(self) -> None:

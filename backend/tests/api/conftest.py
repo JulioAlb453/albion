@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 import httpx
@@ -20,6 +21,7 @@ from tests.application.fakes import (
 from tests.domain.fixtures import precio
 
 FRONTEND = "https://gremio.test/app"
+CLAVE_BOT = "b" * 32
 PRECIOS = [
     precio(Ciudad.FORT_STERLING, venta=100_000, compra=90_000),
     precio(Ciudad.BLACK_MARKET, compra=150_000),
@@ -46,15 +48,19 @@ class Entorno:
         return {"Authorization": f"Bearer {self.contenedor.emisor_tokens.emitir_sesion(usuario)}"}
 
 
-def armar_contenedor() -> tuple[Contenedor, ProveedorPreciosFalso, NotificadorMemoria, ProveedorIdentidadFalso, RelojFijo]:
+def armar_contenedor(
+    **cambios_de_configuracion,
+) -> tuple[Contenedor, ProveedorPreciosFalso, NotificadorMemoria, ProveedorIdentidadFalso, RelojFijo]:
     """Un contenedor real, con la base en memoria sin abrir y dobles para lo externo."""
-    config = Configuracion(
+    datos = dict(
         secreto_jwt="s" * 32,
         ruta_db=":memory:",
         frontend_url=FRONTEND,
         api_publica_url="https://api.test",
         cors_origenes=("https://gremio.test",),
+        bot_clave=CLAVE_BOT,
     )
+    config = Configuracion(**(datos | cambios_de_configuracion))
     reloj = RelojFijo()
     precios = ProveedorPreciosFalso(PRECIOS)
     notificador = NotificadorMemoria()
@@ -75,11 +81,17 @@ def armar_contenedor() -> tuple[Contenedor, ProveedorPreciosFalso, NotificadorMe
     return Contenedor(config, Database(":memory:"), externos), precios, notificador, identidad, reloj
 
 
-@pytest_asyncio.fixture
-async def entorno():
-    contenedor, precios, notificador, identidad, reloj = armar_contenedor()
+@asynccontextmanager
+async def montar_entorno(**cambios_de_configuracion):
+    contenedor, precios, notificador, identidad, reloj = armar_contenedor(**cambios_de_configuracion)
     app = crear_app(contenedor)
     async with app.router.lifespan_context(app):
         transporte = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transporte, base_url="https://api.test") as cliente:
             yield Entorno(cliente, contenedor, precios, notificador, identidad, reloj)
+
+
+@pytest_asyncio.fixture
+async def entorno():
+    async with montar_entorno() as e:
+        yield e

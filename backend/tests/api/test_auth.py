@@ -117,6 +117,19 @@ class TestCors:
         )
         assert respuesta.headers["access-control-allow-origin"] == "https://gremio.test"
 
+    async def test_permite_la_cabecera_que_salta_el_aviso_de_ngrok(self, entorno):
+        # Sin ella, el dominio gratuito de ngrok responde una página HTML de aviso en vez de la API.
+        respuesta = await entorno.cliente.options(
+            "/api/ventas",
+            headers={
+                "Origin": "https://gremio.test",
+                "Access-Control-Request-Method": "GET",
+                "Access-Control-Request-Headers": "authorization,ngrok-skip-browser-warning",
+            },
+        )
+        assert respuesta.status_code == 200
+        assert "ngrok-skip-browser-warning" in respuesta.headers["access-control-allow-headers"].lower()
+
     async def test_no_permite_otros_origenes(self, entorno):
         respuesta = await entorno.cliente.options(
             "/api/salud",

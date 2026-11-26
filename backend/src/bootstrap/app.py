@@ -30,16 +30,21 @@ def crear_app(contenedor: Contenedor, con_planificador: bool = False) -> FastAPI
     async def vida(_: FastAPI):
         await contenedor.db.abrir()
         detener = asyncio.Event()
-        planificador = None
+        tareas: list[asyncio.Task] = []
         if con_planificador:
             segundos = contenedor.config.intervalo_alertas_minutos * 60
-            planificador = asyncio.create_task(ejecutar_periodicamente(revisar_alertas, segundos, detener))
+            tareas.append(asyncio.create_task(ejecutar_periodicamente(revisar_alertas, segundos, detener)))
+            if contenedor.respaldo is not None:
+                # Se intenta cada 6 horas: hace una copia por día y sobrevive a reinicios de la PC.
+                tareas.append(
+                    asyncio.create_task(ejecutar_periodicamente(contenedor.respaldo.ejecutar, 6 * 3600, detener))
+                )
         try:
             yield
         finally:
             detener.set()
-            if planificador is not None:
-                await planificador
+            for tarea in tareas:
+                await tarea
             await contenedor.cerrar()
 
     app = FastAPI(title="Gremio Albion: ventas", version="0.1.0", lifespan=vida)
@@ -48,7 +53,8 @@ def crear_app(contenedor: Contenedor, con_planificador: bool = False) -> FastAPI
         CORSMiddleware,
         allow_origins=list(contenedor.config.cors_origenes),
         allow_methods=["*"],
-        allow_headers=["Authorization", "Content-Type"],
+        # La tercera salta la página de aviso del dominio gratuito de ngrok, que si no responde HTML.
+        allow_headers=["Authorization", "Content-Type", "ngrok-skip-browser-warning"],
         expose_headers=["Content-Disposition"],  # para que el frontend lea el nombre del archivo
     )
     registrar_manejadores(app)

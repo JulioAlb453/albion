@@ -45,6 +45,26 @@ def test_lee_todo_del_entorno():
     assert (config.discord_client_id, config.discord_rol_general_id) == ("cid", "rg")
 
 
+def test_la_clave_del_bot_es_opcional_pero_si_existe_debe_ser_larga():
+    assert Configuracion.desde_entorno(SECRETO).bot_clave == ""
+    with pytest.raises(ErrorConfiguracion, match="GREMIO_BOT_CLAVE"):
+        Configuracion.desde_entorno(SECRETO | {"GREMIO_BOT_CLAVE": "corta"})
+    assert Configuracion.desde_entorno(SECRETO | {"GREMIO_BOT_CLAVE": "b" * 32}).bot_clave == "b" * 32
+
+
+def test_las_copias_de_seguridad_tienen_valores_por_defecto_y_se_configuran():
+    por_defecto = Configuracion.desde_entorno(SECRETO)
+    assert (por_defecto.respaldos_dir, por_defecto.respaldos_conservar) == ("respaldos", 30)
+    config = Configuracion.desde_entorno(SECRETO | {"GREMIO_RESPALDOS_DIR": "/app/respaldos", "GREMIO_RESPALDOS_CONSERVAR": "0"})
+    assert (config.respaldos_dir, config.respaldos_conservar) == ("/app/respaldos", 0)  # 0 las apaga
+
+
+@pytest.mark.parametrize("valor", ["-1", "abc"])
+def test_cuantas_copias_conservar_debe_ser_un_numero_no_negativo(valor):
+    with pytest.raises(ErrorConfiguracion, match="GREMIO_RESPALDOS_CONSERVAR"):
+        Configuracion.desde_entorno(SECRETO | {"GREMIO_RESPALDOS_CONSERVAR": valor})
+
+
 def test_un_numero_invalido_dice_cual_variable_falla():
     with pytest.raises(ErrorConfiguracion, match="GREMIO_TOKEN_HORAS"):
         Configuracion.desde_entorno(SECRETO | {"GREMIO_TOKEN_HORAS": "abc"})

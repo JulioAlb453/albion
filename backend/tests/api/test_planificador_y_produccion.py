@@ -74,6 +74,10 @@ async def _anotar(lista):
     lista.append(1)
 
 
+async def _resultado_vacio():
+    return type("R", (), {"alertas": [], "errores": []})()
+
+
 class TestAppConPlanificador:
     async def test_revisa_las_alertas_al_arrancar_y_se_detiene_al_cerrar(self):
         contenedor, *_ = armar_contenedor()
@@ -91,6 +95,24 @@ class TestAppConPlanificador:
         veces = len(llamadas)
         await asyncio.sleep(0.05)
         assert len(llamadas) == veces  # ya no corre después de cerrar la aplicación
+
+    async def test_hace_la_copia_de_seguridad_al_arrancar(self):
+        contenedor, *_ = armar_contenedor()
+        copias = []
+
+        class Respaldo:
+            async def ejecutar(self):
+                copias.append(1)
+
+        contenedor.respaldo = Respaldo()
+        contenedor.revisar_alertas = type("R", (), {"ejecutar": lambda self: _resultado_vacio()})()
+        app = crear_app(contenedor, con_planificador=True)
+        async with app.router.lifespan_context(app):
+            await esperar(lambda: len(copias) >= 1)
+
+    def test_las_copias_se_pueden_apagar(self):
+        assert armar_contenedor()[0].respaldo is not None
+        assert armar_contenedor(respaldos_conservar=0)[0].respaldo is None
 
     async def test_sin_planificador_no_revisa_nada(self):
         contenedor, *_ = armar_contenedor()

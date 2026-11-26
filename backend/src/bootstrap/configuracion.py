@@ -23,10 +23,17 @@ class Configuracion:
     discord_rol_admin_id: str = ""
     discord_rol_general_id: str = ""
     discord_webhook_alertas: str = ""
+    bot_clave: str = ""  # vacía: el bot de Discord no puede usar la API
+    respaldos_dir: str = "respaldos"
+    respaldos_conservar: int = 30  # cuántas copias diarias se guardan; 0 apaga las copias
 
     def __post_init__(self) -> None:
         if len(self.secreto_jwt) < 32:
             raise ErrorConfiguracion("GREMIO_JWT_SECRET debe tener al menos 32 caracteres")
+        if self.bot_clave and len(self.bot_clave) < 32:
+            raise ErrorConfiguracion("GREMIO_BOT_CLAVE debe tener al menos 32 caracteres")
+        if self.respaldos_conservar < 0:
+            raise ErrorConfiguracion("GREMIO_RESPALDOS_CONSERVAR no puede ser negativo")
 
     @classmethod
     def desde_entorno(cls, entorno: Mapping[str, str] | None = None) -> "Configuracion":
@@ -59,4 +66,7 @@ class Configuracion:
             discord_rol_admin_id=texto("DISCORD_ROL_ADMIN_ID"),
             discord_rol_general_id=texto("DISCORD_ROL_GENERAL_ID"),
             discord_webhook_alertas=texto("DISCORD_WEBHOOK_ALERTAS"),
+            bot_clave=texto("BOT_CLAVE"),
+            respaldos_dir=texto("RESPALDOS_DIR", por_defecto["respaldos_dir"].default),
+            respaldos_conservar=entero("RESPALDOS_CONSERVAR", por_defecto["respaldos_conservar"].default),
         )

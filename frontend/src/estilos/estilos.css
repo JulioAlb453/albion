@@ -254,7 +254,10 @@ input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
   list-style: none; max-height: 340px; overflow: auto;
   background: var(--superficie); border: 1px solid var(--borde-fuerte); border-radius: 14px; box-shadow: var(--sombra);
 }
-.selector__opcion { display: flex; flex-direction: column; padding: 9px 12px; border-radius: 10px; cursor: pointer; }
+.selector__opcion { display: flex; align-items: center; gap: 12px; padding: 7px 12px; border-radius: 10px; cursor: pointer; }
+.selector__texto { display: flex; flex-direction: column; min-width: 0; }
+.imagen-objeto { flex: none; display: block; object-fit: contain; }
+.imagen-objeto--vacia { border-radius: 10px; background: var(--superficie-3); }
 .selector__opcion:hover, .selector__opcion[aria-selected="true"] { background: var(--superficie-3); }
 .controles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 

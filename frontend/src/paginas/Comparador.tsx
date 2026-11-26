@@ -87,6 +87,8 @@ export function Comparador() {
       >
         <SelectorObjeto
           valor={objeto.data ?? null}
+          encantamiento={consulta?.encantamiento ?? 0}
+          calidad={consulta?.calidad ?? 1}
           alElegir={(elegido) =>
             elegido
               ? cambiar({ base_id: elegido.base_id, enc: null, cal: null })

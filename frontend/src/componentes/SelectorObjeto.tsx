@@ -1,16 +1,20 @@
 import { useId, useState, type KeyboardEvent } from "react";
 import { useCatalogo } from "../api/consultas";
 import { CATEGORIAS_OBJETO, type ObjetoCatalogo } from "../api/tipos";
+import { ImagenObjeto } from "../ui/ImagenObjeto";
 import { useRetraso } from "../util/useRetraso";
 
 interface Props {
   valor: ObjetoCatalogo | null;
   alElegir: (objeto: ObjetoCatalogo | null) => void;
   etiqueta?: string;
+  /** Para que la imagen del objeto elegido refleje lo que se está consultando. */
+  encantamiento?: number;
+  calidad?: number;
 }
 
 /** Buscador de objetos del catálogo, con lista desplegable y manejo por teclado. */
-export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto" }: Props) {
+export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto", encantamiento = 0, calidad = 1 }: Props) {
   const [texto, setTexto] = useState("");
   const [abierto, setAbierto] = useState(false);
   const [activo, setActivo] = useState(-1);
@@ -21,6 +25,7 @@ export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto" }: 
   if (valor) {
     return (
       <div className="selector selector--elegido">
+        <ImagenObjeto baseId={valor.base_id} encantamiento={encantamiento} calidad={calidad} tamano={64} />
         <div className="lista__principal">
           <div className="lista__titulo">{valor.nombre}</div>
           <div className="lista__detalle">{valor.base_id}</div>
@@ -95,8 +100,11 @@ export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto" }: 
                 elegir(objeto);
               }}
             >
-              <span className="lista__titulo">{objeto.nombre}</span>
-              <span className="lista__detalle">{objeto.base_id} · {CATEGORIAS_OBJETO[objeto.categoria]}</span>
+              <ImagenObjeto baseId={objeto.base_id} tamano={36} />
+              <span className="selector__texto">
+                <span className="lista__titulo">{objeto.nombre}</span>
+                <span className="lista__detalle">{objeto.base_id} · {CATEGORIAS_OBJETO[objeto.categoria]}</span>
+              </span>
             </li>
           ))}
         </ul>

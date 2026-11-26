@@ -65,4 +65,17 @@ describe("SelectorObjeto", () => {
     await userEvent.click(screen.getByRole("button", { name: /cambiar/i }));
     expect(alElegir).toHaveBeenCalledWith(null);
   });
+
+  it("cada resultado muestra la imagen del objeto", async () => {
+    instalarApi({ "GET /api/catalogo": [ESPADA, ARMADURA] });
+    montarPagina(<SelectorObjeto valor={null} alElegir={() => {}} />);
+    await userEvent.type(buscador(), "maestro");
+    const opciones = await screen.findAllByRole("option");
+    expect(opciones[0]!.querySelector("img")?.getAttribute("src")).toContain("/item/T6_MAIN_SWORD.png");
+  });
+
+  it("el objeto elegido se ve con el encantamiento y la calidad indicados", () => {
+    const { container } = montarPagina(<SelectorObjeto valor={ESPADA} encantamiento={2} calidad={4} alElegir={() => {}} />);
+    expect(container.querySelector("img")?.getAttribute("src")).toContain("/item/T6_MAIN_SWORD@2.png?quality=4");
+  });
 });

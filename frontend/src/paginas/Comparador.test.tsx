@@ -103,4 +103,13 @@ describe("Comparador", () => {
     await screen.findAllByRole("article");
     expect(screen.queryByRole("button", { name: /registrar/i })).not.toBeInTheDocument();
   });
+
+  it("la imagen del objeto cambia con el encantamiento elegido", async () => {
+    instalarApi(RUTAS);
+    const { container } = montarPagina(<Comparador />, { ruta: RUTA });
+    await screen.findByText("Espada ancha del maestro");
+    expect(container.querySelector("img")?.getAttribute("src")).toContain("T6_MAIN_SWORD@2.png?quality=4");
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: /encantamiento/i }), "3");
+    expect(container.querySelector("img")?.getAttribute("src")).toContain("T6_MAIN_SWORD@3.png?quality=4");
+  });
 });

@@ -105,3 +105,9 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Fragmento** | La parte de la dirección tras `#`. El resultado del login vuelve ahí (`#token=` o `#error=`) porque el navegador no la envía a ningún servidor ni queda en logs. | `router_auth.callback` |
 | **Planificador** | Ciclo que corre `RevisarAlertas` al arrancar y cada `GREMIO_INTERVALO_ALERTAS_MINUTOS`. Una falla se informa y el ciclo sigue. | `ejecutar_periodicamente` |
 | **Código de error HTTP** | 401 sin sesión, 403 sin permiso, 404 no existe, 422 regla violada o dato inválido, 502 Discord o Albion caídos. | `registrar_manejadores` |
+
+## Bot y despliegue
+
+- **Clave del bot** (`GREMIO_BOT_CLAVE`): secreto compartido entre la API y el bot. Solo se acepta dentro de la red interna.
+- **Respaldo**: copia diaria de la base de datos (`gremio-AAAA-MM-DD.db`) que se hace sola y se conserva por días.
+- **Dominio fijo** (`NGROK_DOMINIO`): dirección pública gratuita de ngrok por la que entra el frontend a tu PC.

@@ -1,0 +1,45 @@
+# Todo el sistema en tu PC: API + bot de Discord + túnel ngrok.
+#   cp .env.example .env   (y rellenarlo)
+#   docker compose up -d --build
+services:
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      # dentro del contenedor las rutas son fijas; lo demás sale del .env
+      GREMIO_DB: /app/data/gremio.db
+      GREMIO_RESPALDOS_DIR: /app/respaldos
+    volumes:
+      - ./data:/app/data
+      - ./respaldos:/app/respaldos
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/salud', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  bot:
+    build: ./bot
+    # solo lo que el bot necesita: no recibe el secreto de sesión ni el de OAuth
+    environment:
+      DISCORD_TOKEN: ${GREMIO_DISCORD_BOT_TOKEN:?falta GREMIO_DISCORD_BOT_TOKEN en .env}
+      DISCORD_CLIENT_ID: ${GREMIO_DISCORD_CLIENT_ID:?falta GREMIO_DISCORD_CLIENT_ID en .env}
+      DISCORD_GUILD_ID: ${GREMIO_DISCORD_GUILD_ID:?falta GREMIO_DISCORD_GUILD_ID en .env}
+      BOT_CLAVE: ${GREMIO_BOT_CLAVE:?falta GREMIO_BOT_CLAVE en .env}
+      API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: ["http", "--url=${NGROK_DOMINIO:?falta NGROK_DOMINIO en .env}", "api:8000"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?falta NGROK_AUTHTOKEN en .env}
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

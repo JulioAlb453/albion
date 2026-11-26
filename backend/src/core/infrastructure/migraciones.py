@@ -106,4 +106,18 @@ PRAGMA user_version = 2;
 COMMIT;
 """
 
-MIGRACIONES: tuple[str, ...] = (_V1, _V2)
+# El catálogo deja de ser solo armas, armaduras y artefactos: cada objeto dice qué admite.
+_V3 = """
+BEGIN;
+
+ALTER TABLE catalogo_objetos ADD COLUMN tiene_calidad     INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE catalogo_objetos ADD COLUMN encantamiento_min INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE catalogo_objetos ADD COLUMN encantamiento_max INTEGER NOT NULL DEFAULT 4;
+
+UPDATE catalogo_objetos SET tiene_calidad = 0, encantamiento_max = 0 WHERE categoria = 'artefacto';
+
+PRAGMA user_version = 3;
+COMMIT;
+"""
+
+MIGRACIONES: tuple[str, ...] = (_V1, _V2, _V3)

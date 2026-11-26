@@ -12,13 +12,17 @@ class ObjetoCatalogoOut(BaseModel):
     base_id: str
     nombre: str
     categoria: CategoriaObjeto
-    tiene_calidad: bool  # los artefactos no tienen calidad ni encantamiento
+    tiene_calidad: bool
+    # Rango de encantamiento que se puede elegir; min == max significa fijo (0..0: no se encanta).
+    encantamiento_min: int
+    encantamiento_max: int
 
     @classmethod
     def desde(cls, objeto: Objeto) -> "ObjetoCatalogoOut":
         return cls(
-            base_id=objeto.base_id, nombre=objeto.nombre,
-            categoria=objeto.categoria, tiene_calidad=objeto.tiene_calidad,
+            base_id=objeto.base_id, nombre=objeto.nombre, categoria=objeto.categoria,
+            tiene_calidad=bool(objeto.tiene_calidad),
+            encantamiento_min=objeto.encantamiento_min, encantamiento_max=int(objeto.encantamiento_max or 0),
         )
 
 

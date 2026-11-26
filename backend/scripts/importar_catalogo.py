@@ -1,8 +1,9 @@
-"""Carga el catálogo de armas, armaduras y artefactos en la base de datos.
+"""Carga en la base de datos el catálogo de todo lo que se vende en el mercado.
 
 Desde backend/:
-    python -m scripts.importar_catalogo                      # descarga items.json del volcado público
-    python -m scripts.importar_catalogo --origen items.json  # o lo lee de un archivo local
+    python -m scripts.importar_catalogo                  # descarga los dos items.json del volcado público
+    python -m scripts.importar_catalogo --origen carpeta # o los lee de una carpeta local:
+                                                         #   carpeta/items.json y carpeta/formatted/items.json
 
 Se puede repetir cuando el juego agregue objetos: reemplaza el catálogo completo.
 """
@@ -20,25 +21,30 @@ from src.core.infrastructure.database import Database
 from src.mercado.infrastructure.catalogo_items_json import leer_catalogo
 from src.mercado.infrastructure.sqlite_catalogo_objetos import SqliteCatalogoObjetos
 
-URL_ITEMS = "https://raw.githubusercontent.com/ao-data/ao-bin-dumps/master/formatted/items.json"
+_VOLCADO = "https://raw.githubusercontent.com/ao-data/ao-bin-dumps/master"
+ARCHIVOS = ("items.json", "formatted/items.json")  # datos de cada objeto, y sus nombres
 
 
-async def _leer_entradas(origen: str | None) -> list[dict]:
+async def _leer_volcado(origen: str | None) -> list:
     if origen:
-        return json.loads(Path(origen).read_text(encoding="utf-8-sig"))
-    async with httpx.AsyncClient(timeout=120, follow_redirects=True) as cliente:
-        respuesta = await cliente.get(URL_ITEMS)
-        respuesta.raise_for_status()
-        return respuesta.json()
+        return [json.loads((Path(origen) / archivo).read_text(encoding="utf-8-sig")) for archivo in ARCHIVOS]
+    async with httpx.AsyncClient(timeout=180, follow_redirects=True) as cliente:
+        contenidos = []
+        for archivo in ARCHIVOS:
+            respuesta = await cliente.get(f"{_VOLCADO}/{archivo}")
+            respuesta.raise_for_status()
+            contenidos.append(json.loads(respuesta.content.decode("utf-8-sig")))
+        return contenidos
 
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--db", default=os.environ.get("GREMIO_DB", "data/gremio.db"))
-    parser.add_argument("--origen", help="items.json local; sin esto se descarga")
+    parser.add_argument("--origen", help="carpeta con items.json y formatted/items.json; sin esto se descargan")
     argumentos = parser.parse_args()
 
-    objetos = leer_catalogo(await _leer_entradas(argumentos.origen))
+    datos, nombres = await _leer_volcado(argumentos.origen)
+    objetos = leer_catalogo(datos, nombres)
     Path(argumentos.db).parent.mkdir(parents=True, exist_ok=True)
     db = Database(argumentos.db)
     await db.abrir()

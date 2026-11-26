@@ -20,7 +20,8 @@ class TestCatalogo:
         general = await entorno.encabezados(Rol.GENERAL)
         respuesta = await entorno.cliente.get("/api/catalogo", params={"q": "ESPADA"}, headers=general)
         assert respuesta.json() == [
-            {"base_id": "T6_MAIN_SWORD", "nombre": "Espada ancha del maestro", "categoria": "arma", "tiene_calidad": True}
+            {"base_id": "T6_MAIN_SWORD", "nombre": "Espada ancha del maestro", "categoria": "arma", "tiene_calidad": True,
+             "encantamiento_min": 0, "encantamiento_max": 4}
         ]
         solo_armaduras = await entorno.cliente.get("/api/catalogo", params={"q": "maestro", "categoria": "armadura"}, headers=general)
         assert [o["base_id"] for o in solo_armaduras.json()] == ["T6_ARMOR_PLATE_SET1"]
@@ -30,6 +31,7 @@ class TestCatalogo:
         respuesta = await entorno.cliente.get("/api/catalogo/T6_MAIN_SWORD", headers=await entorno.encabezados(Rol.GENERAL))
         assert respuesta.json() == {
             "base_id": "T6_MAIN_SWORD", "nombre": "Espada ancha del maestro", "categoria": "arma", "tiene_calidad": True,
+            "encantamiento_min": 0, "encantamiento_max": 4,
         }
 
     async def test_un_objeto_que_no_existe_da_404(self, entorno):

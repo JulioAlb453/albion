@@ -78,7 +78,7 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Sesión** | Una operación sobre la base de datos. Hay una sola conexión y un candado: una sesión a la vez, y lo que se hace dentro se confirma junto o se descarta junto. No se anidan. | `Database.sesion()` |
 | **Migración** | Una versión del esquema de la base. Se aplican en orden al abrirla y nunca se edita una ya publicada: se agrega otra. La versión queda en `user_version`. | `MIGRACIONES` |
 | **Caché de precios** | Último precio traído de la API por objeto, calidad y ciudad. Un precio nuevo reemplaza al anterior. | `precios_mercado` |
-| **Catálogo** | Armas, armaduras y artefactos de crafteo del juego, con su nombre en español. Se carga con `scripts/importar_catalogo.py` y no incluye variantes encantadas ni herramientas de recolección. | `SqliteCatalogoObjetos` |
+| **Catálogo** | Todo lo que se vende en el mercado (armas, armaduras, capas, bolsas, monturas, consumibles y tomos, recursos, artefactos…), con su nombre en español y lo que admite cada objeto: calidad y rango de encantamiento. Se carga con `scripts/importar_catalogo.py`. Quedan fuera los objetos sin tier (tesoros, paquetes de comercio). | `SqliteCatalogoObjetos` |
 | **Sin datos** | La API marca con la fecha `0001-01-01` un precio que nadie ha reportado. En el dominio es `None`. | `_fecha` |
 | **Servicio externo no disponible** | La API de Albion o Discord no respondió bien. No es un error de la petición: la capa HTTP lo traduce a 502. | `ServicioExternoNoDisponible` |
 

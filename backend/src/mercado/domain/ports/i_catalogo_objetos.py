@@ -4,7 +4,7 @@ from src.mercado.domain.entities.objeto import CategoriaObjeto, Objeto
 
 
 class ICatalogoObjetos(ABC):
-    """Catálogo del juego (armas, armaduras y artefactos) con nombres en español."""
+    """Catálogo de todo lo que se vende en el mercado del juego, con nombres en español."""
 
     @abstractmethod
     async def buscar(

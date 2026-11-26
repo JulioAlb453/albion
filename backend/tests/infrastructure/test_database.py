@@ -67,6 +67,27 @@ class TestDatabase:
         finally:
             await db.cerrar()
 
+    async def test_migra_el_catalogo_viejo_sin_calidad_para_los_artefactos(self, tmp_path):
+        ruta = tmp_path / "vieja.db"
+        antigua = sqlite3.connect(ruta)
+        for script in MIGRACIONES[:2]:
+            antigua.executescript(script)
+        antigua.executemany(
+            "INSERT INTO catalogo_objetos (base_id, nombre, nombre_busqueda, categoria) VALUES (?, ?, ?, ?)",
+            [("T6_MAIN_SWORD", "Espada", "espada", "arma"), ("T4_ARTEFACT_X", "Hueso", "hueso", "artefacto")],
+        )
+        antigua.commit()
+        antigua.close()
+
+        db = Database(ruta)
+        await db.abrir()
+        try:
+            assert await consultar(
+                db, "SELECT base_id, tiene_calidad, encantamiento_min, encantamiento_max FROM catalogo_objetos ORDER BY base_id"
+            ) == [("T4_ARTEFACT_X", 0, 0, 0), ("T6_MAIN_SWORD", 1, 0, 4)]
+        finally:
+            await db.cerrar()
+
     async def test_si_la_sesion_falla_no_se_guarda_nada(self, db):
         with pytest.raises(RuntimeError):
             async with db.sesion() as conn:

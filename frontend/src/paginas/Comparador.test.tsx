@@ -112,4 +112,29 @@ describe("Comparador", () => {
     await userEvent.selectOptions(screen.getByRole("combobox", { name: /encantamiento/i }), "3");
     expect(container.querySelector("img")?.getAttribute("src")).toContain("T6_MAIN_SWORD@3.png?quality=4");
   });
+
+  it("con un objeto elegido la barra de búsqueda sigue a la vista para buscar otro", async () => {
+    instalarApi({ ...RUTAS, "GET /api/catalogo": [ARTEFACTO], "GET /api/catalogo/T4_ARTEFACT_2H_BOW_KEEPER": ARTEFACTO });
+    montarPagina(<Comparador />, { ruta: RUTA });
+    await screen.findByText("Espada ancha del maestro");
+    const barra = screen.getByRole("combobox", { name: /buscar objeto/i });
+    await userEvent.type(barra, "hueso");
+    const resultados = await screen.findByRole("listbox", { name: /resultados/i });
+    await userEvent.click(within(resultados).getByRole("option"));
+    expect(await screen.findByText("Hueso tallado del iniciado")).toBeInTheDocument();
+    expect(screen.queryByText("Espada ancha del maestro")).not.toBeInTheDocument();
+  });
+
+  it("un recurso encantado se consulta con su encantamiento fijo y sin selectores", async () => {
+    const mineral = {
+      base_id: "T4_ORE_LEVEL2", nombre: "Mineral de hierro raro", categoria: "recurso" as const,
+      tiene_calidad: false, encantamiento_min: 2, encantamiento_max: 2,
+    };
+    const llamadas = instalarApi({ "GET /api/catalogo/T4_ORE_LEVEL2": mineral, "GET /api/mercado/comparar": [] });
+    montarPagina(<Comparador />, { ruta: "/comparador?base_id=T4_ORE_LEVEL2" });
+    await screen.findByText("Mineral de hierro raro");
+    await screen.findByText(/todavía nadie ha reportado/i);
+    expect(llamadas.find((l) => l.ruta === "/api/mercado/comparar")?.params).toMatchObject({ encantamiento: "2", calidad: "1" });
+    expect(screen.queryByRole("combobox", { name: /encantamiento|calidad/i })).not.toBeInTheDocument();
+  });
 });

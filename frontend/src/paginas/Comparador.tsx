@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useComparacion, useObjeto } from "../api/consultas";
-import { etiquetaCalidad } from "../util/formato";
 import type { Ciudad, TipoVenta } from "../api/tipos";
 import { useRegistro } from "../componentes/ContextoRegistro";
+import { ajustar, CamposObjeto } from "../componentes/CamposObjeto";
 import { SelectorObjeto } from "../componentes/SelectorObjeto";
 import { TarjetaCiudad } from "../componentes/TarjetaCiudad";
 import { useSesion } from "../sesion/ContextoSesion";
@@ -33,8 +33,7 @@ export function Comparador() {
     baseId && objeto.data
       ? {
           base_id: baseId,
-          encantamiento: objeto.data.tiene_calidad ? encantamiento : 0,
-          calidad: objeto.data.tiene_calidad ? calidad : 1,
+          ...ajustar(objeto.data, encantamiento, calidad),
           cantidad,
         }
       : null;
@@ -87,6 +86,7 @@ export function Comparador() {
       >
         <SelectorObjeto
           valor={objeto.data ?? null}
+          buscarSiempre
           encantamiento={consulta?.encantamiento ?? 0}
           calidad={consulta?.calidad ?? 1}
           alElegir={(elegido) =>
@@ -100,26 +100,13 @@ export function Comparador() {
         )}
         {objeto.data && (
           <div className="controles">
-            {objeto.data.tiene_calidad && (
-              <>
-                <label className="campo">
-                  <span>Encantamiento</span>
-                  <select value={encantamiento} onChange={(e) => cambiar({ enc: e.target.value })}>
-                    {[0, 1, 2, 3, 4].map((n) => (
-                      <option key={n} value={n}>{n === 0 ? ".0 (sin encantar)" : `.${n}`}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="campo">
-                  <span>Calidad</span>
-                  <select value={calidad} onChange={(e) => cambiar({ cal: e.target.value })}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>{etiquetaCalidad(n)}</option>
-                    ))}
-                  </select>
-                </label>
-              </>
-            )}
+            <CamposObjeto
+              objeto={objeto.data}
+              encantamiento={consulta?.encantamiento ?? 0}
+              calidad={consulta?.calidad ?? 1}
+              alCambiarEncantamiento={(n) => cambiar({ enc: String(n) })}
+              alCambiarCalidad={(n) => cambiar({ cal: String(n) })}
+            />
             <label className="campo">
               <span>Cantidad</span>
               <input

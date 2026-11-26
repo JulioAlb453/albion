@@ -2,12 +2,15 @@ import type { Ciudad, Comparacion, Objeto, ObjetoCatalogo, Opcion, TipoVenta, Ve
 
 export const ESPADA: ObjetoCatalogo = {
   base_id: "T6_MAIN_SWORD", nombre: "Espada ancha del maestro", categoria: "arma", tiene_calidad: true,
+  encantamiento_min: 0, encantamiento_max: 4,
 };
 export const ARMADURA: ObjetoCatalogo = {
   base_id: "T6_ARMOR_PLATE_SET1", nombre: "Armadura de soldado del maestro", categoria: "armadura", tiene_calidad: true,
+  encantamiento_min: 0, encantamiento_max: 4,
 };
 export const ARTEFACTO: ObjetoCatalogo = {
   base_id: "T4_ARTEFACT_2H_BOW_KEEPER", nombre: "Hueso tallado del iniciado", categoria: "artefacto", tiene_calidad: false,
+  encantamiento_min: 0, encantamiento_max: 0,
 };
 
 export const OBJETO_ESPADA: Objeto = {

@@ -249,6 +249,7 @@ input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
 /* ---------- Buscador de objetos ---------- */
 .selector { position: relative; }
 .selector--elegido { display: flex; align-items: center; gap: 12px; }
+.selector-fijo { display: flex; flex-direction: column; gap: 14px; }
 .selector__lista {
   position: absolute; z-index: 15; top: 100%; left: 0; right: 0; margin: 6px 0 0; padding: 6px;
   list-style: none; max-height: 340px; overflow: auto;

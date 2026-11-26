@@ -47,6 +47,14 @@ describe("/precio", () => {
     await precio.ejecutar(i, contexto(api));
     expect(texto()).toContain("No hay precios");
   });
+
+  it("un recurso encantado usa su encantamiento fijo", async () => {
+    const mineral = { ...ARTEFACTO, base_id: "T4_ORE_LEVEL2", categoria: "recurso" as const, encantamiento_min: 2, encantamiento_max: 2 };
+    const api = apiFalsa({ obtenerObjeto: async () => mineral, comparar: async () => [] });
+    const { i } = interaccion({ objeto: "T4_ORE_LEVEL2", encantamiento: 0 });
+    await precio.ejecutar(i, contexto(api));
+    expect(api.comparar).toHaveBeenCalledWith(expect.objectContaining({ encantamiento: 2, calidad: 1 }));
+  });
 });
 
 describe("/comparar", () => {

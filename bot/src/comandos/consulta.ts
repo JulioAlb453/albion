@@ -5,8 +5,9 @@ import type { Comparacion, Contexto, ObjetoCatalogo } from "../tipos.js";
 export async function consultar(i: InteraccionComando, ctx: Contexto, cantidad: number) {
   const baseId = i.options.getString("objeto") ?? "";
   const objeto: ObjetoCatalogo = await ctx.api.obtenerObjeto(baseId);
-  // los artefactos no tienen calidad ni encantamiento: se ignora lo que se escriba
-  const encantamiento = objeto.tiene_calidad ? (i.options.getInteger("encantamiento") ?? 0) : 0;
+  // cada objeto admite lo suyo (un tomo no tiene calidad, un recurso .2 es siempre .2): se ajusta lo escrito
+  const pedido = i.options.getInteger("encantamiento") ?? objeto.encantamiento_min;
+  const encantamiento = Math.min(Math.max(pedido, objeto.encantamiento_min), objeto.encantamiento_max);
   const calidad = objeto.tiene_calidad ? (i.options.getInteger("calidad") ?? 1) : 1;
   const comparaciones = await ctx.api.comparar({ base_id: baseId, encantamiento, calidad, cantidad });
   return { objeto, comparaciones: ordenar(comparaciones) };

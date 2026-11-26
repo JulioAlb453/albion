@@ -11,10 +11,12 @@ interface Props {
   /** Para que la imagen del objeto elegido refleje lo que se está consultando. */
   encantamiento?: number;
   calidad?: number;
+  /** La barra de búsqueda queda siempre a la vista, también con un objeto elegido (sin «Cambiar»). */
+  buscarSiempre?: boolean;
 }
 
 /** Buscador de objetos del catálogo, con lista desplegable y manejo por teclado. */
-export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto", encantamiento = 0, calidad = 1 }: Props) {
+export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto", encantamiento = 0, calidad = 1, buscarSiempre = false }: Props) {
   const [texto, setTexto] = useState("");
   const [abierto, setAbierto] = useState(false);
   const [activo, setActivo] = useState(-1);
@@ -22,18 +24,18 @@ export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto", en
   const buscado = useRetraso(texto.trim(), 250);
   const resultados = useCatalogo(buscado);
 
-  if (valor) {
-    return (
+  const tarjeta = (elegido: ObjetoCatalogo, conCambiar: boolean) => (
       <div className="selector selector--elegido">
-        <ImagenObjeto baseId={valor.base_id} encantamiento={encantamiento} calidad={calidad} tamano={64} />
+        <ImagenObjeto baseId={elegido.base_id} encantamiento={encantamiento} calidad={calidad} tamano={64} />
         <div className="lista__principal">
-          <div className="lista__titulo">{valor.nombre}</div>
-          <div className="lista__detalle">{valor.base_id}</div>
+          <div className="lista__titulo">{elegido.nombre}</div>
+          <div className="lista__detalle">{elegido.base_id}</div>
         </div>
-        <button type="button" className="boton" onClick={() => alElegir(null)}>Cambiar</button>
+        {conCambiar && <button type="button" className="boton" onClick={() => alElegir(null)}>Cambiar</button>}
       </div>
-    );
-  }
+  );
+
+  if (valor && !buscarSiempre) return tarjeta(valor, true);
 
   const lista = buscado.length >= 2 ? (resultados.data ?? []) : [];
   const hayLista = abierto && lista.length > 0;
@@ -62,7 +64,7 @@ export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto", en
     }
   };
 
-  return (
+  const busqueda = (
     <div className="selector">
       <input
         role="combobox"
@@ -109,6 +111,14 @@ export function SelectorObjeto({ valor, alElegir, etiqueta = "Buscar objeto", en
           ))}
         </ul>
       )}
+    </div>
+  );
+
+  if (!valor) return busqueda;
+  return (
+    <div className="selector-fijo">
+      {busqueda}
+      {tarjeta(valor, false)}
     </div>
   );
 }

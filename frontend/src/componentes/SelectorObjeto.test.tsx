@@ -78,4 +78,16 @@ describe("SelectorObjeto", () => {
     const { container } = montarPagina(<SelectorObjeto valor={ESPADA} encantamiento={2} calidad={4} alElegir={() => {}} />);
     expect(container.querySelector("img")?.getAttribute("src")).toContain("/item/T6_MAIN_SWORD@2.png?quality=4");
   });
+
+  it("con buscarSiempre deja buscar otro objeto sin pasar por «Cambiar»", async () => {
+    instalarApi({ "GET /api/catalogo": [ARMADURA] });
+    const alElegir = vi.fn();
+    montarPagina(<SelectorObjeto valor={ESPADA} buscarSiempre alElegir={alElegir} />);
+    expect(screen.getByText("Espada ancha del maestro")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /cambiar/i })).not.toBeInTheDocument();
+    await userEvent.type(buscador(), "soldado");
+    await userEvent.click(await screen.findByRole("option"));
+    expect(alElegir).toHaveBeenCalledWith(ARMADURA);
+    expect(buscador()).toHaveValue("");
+  });
 });

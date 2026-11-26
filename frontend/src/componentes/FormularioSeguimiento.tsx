@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useCrearSeguimiento } from "../api/consultas";
 import { CIUDADES, type Ciudad, type NuevoSeguimiento, type ObjetoCatalogo } from "../api/tipos";
 import { useAvisos } from "../ui/Avisos";
-import { etiquetaCalidad } from "../util/formato";
+import { admiteOpciones, ajustar, CamposObjeto } from "./CamposObjeto";
 import { SelectorObjeto } from "./SelectorObjeto";
 
 interface Props {
@@ -31,8 +31,7 @@ export function FormularioSeguimiento({ prefill, alTerminar }: Props) {
     if (!objeto || !valido) return;
     const seguimiento: NuevoSeguimiento = {
       base_id: objeto.base_id,
-      encantamiento: objeto.tiene_calidad ? encantamiento : 0,
-      calidad: objeto.tiene_calidad ? calidad : 1,
+      ...ajustar(objeto, encantamiento, calidad),
       ciudad_referencia: referencia,
       ...(porcentajeValido ? { porcentaje_minimo: Number(porcentaje) } : {}),
       ...(netoValido ? { neto_minimo: Number(neto) } : {}),
@@ -53,26 +52,18 @@ export function FormularioSeguimiento({ prefill, alTerminar }: Props) {
           valor={objeto}
           alElegir={(elegido) => {
             setObjeto(elegido);
-            setEncantamiento(0);
+            setEncantamiento(elegido?.encantamiento_min ?? 0);
             setCalidad(1);
           }}
         />
       </div>
 
-      {objeto?.tiene_calidad && (
+      {objeto && admiteOpciones(objeto) && (
         <div className="rejilla-2">
-          <label className="campo">
-            <span>Encantamiento</span>
-            <select value={encantamiento} onChange={(e) => setEncantamiento(Number(e.target.value))}>
-              {[0, 1, 2, 3, 4].map((n) => <option key={n} value={n}>{n === 0 ? ".0 (sin encantar)" : `.${n}`}</option>)}
-            </select>
-          </label>
-          <label className="campo">
-            <span>Calidad</span>
-            <select value={calidad} onChange={(e) => setCalidad(Number(e.target.value))}>
-              {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{etiquetaCalidad(n)}</option>)}
-            </select>
-          </label>
+          <CamposObjeto
+            objeto={objeto} encantamiento={encantamiento} calidad={calidad}
+            alCambiarEncantamiento={setEncantamiento} alCambiarCalidad={setCalidad}
+          />
         </div>
       )}
 

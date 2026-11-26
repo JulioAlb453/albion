@@ -30,10 +30,23 @@ export const CATEGORIAS_GASTO = {
 } as const;
 export type CategoriaGasto = keyof typeof CATEGORIAS_GASTO;
 
-export type CategoriaObjeto = "arma" | "armadura" | "artefacto";
-export const CATEGORIAS_OBJETO: Record<CategoriaObjeto, string> = {
-  arma: "Armas", armadura: "Armaduras", artefacto: "Artefactos",
-};
+/** Las secciones del mercado del juego (las mismas que el backend). */
+export const CATEGORIAS_OBJETO = {
+  arma: "Armas",
+  armadura: "Armaduras",
+  capa: "Capas",
+  bolsa: "Bolsas",
+  montura: "Monturas",
+  consumible: "Consumibles",
+  recurso: "Recursos",
+  artefacto: "Artefactos",
+  recoleccion: "Recolección",
+  granja: "Granja",
+  mobiliario: "Mobiliario",
+  apariencia: "Apariencia",
+  otro: "Otros",
+} as const;
+export type CategoriaObjeto = keyof typeof CATEGORIAS_OBJETO;
 
 export interface Objeto {
   base_id: string;
@@ -47,7 +60,10 @@ export interface ObjetoCatalogo {
   base_id: string;
   nombre: string;
   categoria: CategoriaObjeto;
-  tiene_calidad: boolean; // los artefactos no tienen calidad ni encantamiento
+  tiene_calidad: boolean;
+  /** Rango de encantamiento que se puede elegir; si son iguales es fijo (p. ej. un recurso .2). */
+  encantamiento_min: number;
+  encantamiento_max: number;
 }
 
 export interface Venta {

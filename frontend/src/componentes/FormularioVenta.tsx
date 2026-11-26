@@ -3,8 +3,9 @@ import { useRegistrarVenta } from "../api/consultas";
 import { CIUDADES, TIPOS_VENTA, type Ciudad, type NuevaVenta, type ObjetoCatalogo, type TipoVenta } from "../api/tipos";
 import { useAvisos } from "../ui/Avisos";
 import { calcularDesglose } from "../util/desglose";
-import { etiquetaCalidad, plataCompleta } from "../util/formato";
+import { plataCompleta } from "../util/formato";
 import type { PrefillVenta } from "./ContextoRegistro";
+import { admiteOpciones, ajustar, CamposObjeto } from "./CamposObjeto";
 import { SelectorObjeto } from "./SelectorObjeto";
 
 interface Props {
@@ -46,8 +47,7 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
     if (!objeto || !valido) return;
     const venta: NuevaVenta = {
       base_id: objeto.base_id,
-      encantamiento: objeto.tiene_calidad ? encantamiento : 0,
-      calidad: objeto.tiene_calidad ? calidad : 1,
+      ...ajustar(objeto, encantamiento, calidad),
       ciudad,
       tipo: tipoEfectivo,
       cantidad: Number(cantidad),
@@ -71,30 +71,18 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
           valor={objeto}
           alElegir={(elegido) => {
             setObjeto(elegido);
-            setEncantamiento(0);
+            setEncantamiento(elegido?.encantamiento_min ?? 0);
             setCalidad(1);
           }}
         />
       </div>
 
-      {objeto?.tiene_calidad && (
+      {objeto && admiteOpciones(objeto) && (
         <div className="rejilla-2">
-          <label className="campo">
-            <span>Encantamiento</span>
-            <select value={encantamiento} onChange={(e) => setEncantamiento(Number(e.target.value))}>
-              {[0, 1, 2, 3, 4].map((n) => (
-                <option key={n} value={n}>{n === 0 ? ".0 (sin encantar)" : `.${n}`}</option>
-              ))}
-            </select>
-          </label>
-          <label className="campo">
-            <span>Calidad</span>
-            <select value={calidad} onChange={(e) => setCalidad(Number(e.target.value))}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>{etiquetaCalidad(n)}</option>
-              ))}
-            </select>
-          </label>
+          <CamposObjeto
+            objeto={objeto} encantamiento={encantamiento} calidad={calidad}
+            alCambiarEncantamiento={setEncantamiento} alCambiarCalidad={setCalidad}
+          />
         </div>
       )}
 

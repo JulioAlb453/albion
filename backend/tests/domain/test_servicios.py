@@ -34,11 +34,11 @@ class TestComparador:
         assert fort.diferencia_orden_vs_directa == 7_100
         assert fort.mejor.tipo is TipoVenta.ORDEN
 
-    def test_black_market_solo_directa(self):
+    def test_el_black_market_compara_orden_y_directa_como_cualquier_mercado(self):
         [bm] = comparar_por_ciudad(
             [precio(Ciudad.BLACK_MARKET, venta=200_000, compra=150_000)], ahora=AHORA
         )
-        assert bm.orden is None and bm.directa.precio_unitario == 150_000
+        assert bm.orden.precio_unitario == 200_000 and bm.directa.precio_unitario == 150_000
 
     def test_descarta_ciudades_sin_datos(self):
         assert comparar_por_ciudad([precio(Ciudad.MARTLOCK)], ahora=AHORA) == []

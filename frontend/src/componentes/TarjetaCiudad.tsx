@@ -78,11 +78,7 @@ export function TarjetaCiudad({ comparacion, esMejor, puedeRegistrar, cantidad, 
       </header>
 
       <BloqueOpcion {...compartido} tipo="directa" opcion={directa} ganadora={mejor === "directa"} vacio="Sin órdenes de compra registradas" />
-      {ciudad === "Black Market" ? (
-        <p className="nota">El Black Market solo admite venta directa.</p>
-      ) : (
-        <BloqueOpcion {...compartido} tipo="orden" opcion={orden} ganadora={mejor === "orden"} vacio="Sin órdenes de venta registradas" />
-      )}
+      <BloqueOpcion {...compartido} tipo="orden" opcion={orden} ganadora={mejor === "orden"} vacio="Sin órdenes de venta registradas" />
 
       {diferencia !== null && (
         <p className="ciudad__diferencia">

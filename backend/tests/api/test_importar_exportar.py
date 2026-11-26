@@ -65,12 +65,12 @@ class TestImportarVentas:
         contenido = (
             f"{CABECERA}\n"
             "2026-11-24,T6_MAIN_SWORD,0,1,Lymhurst,directa,1,100\n"
-            "2026-11-24,T6_MAIN_SWORD,0,1,Black Market,orden,1,100\n"
+            "2026-11-24,ESPADA,0,1,Black Market,orden,1,100\n"
         )
         respuesta = await subir(entorno, "/api/ventas/importar", contenido)
         assert respuesta.status_code == 422
         [error] = respuesta.json()["errores"]
-        assert error["fila"] == 3 and "Black Market" in error["mensaje"]
+        assert error["fila"] == 3 and "inválido" in error["mensaje"]
         assert (await entorno.cliente.get("/api/ventas", headers=await entorno.encabezados())).json() == []
 
     async def test_avisa_de_las_columnas_que_faltan(self, entorno):

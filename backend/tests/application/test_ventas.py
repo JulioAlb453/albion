@@ -46,10 +46,8 @@ class TestRegistrarVenta:
         assert self.repo.items == {}
 
     async def test_una_regla_de_dominio_impide_guardar(self):
-        with pytest.raises(ErrorDominio, match="Black Market"):
-            await self.caso.ejecutar(
-                ADMIN, datos(ciudad=Ciudad.BLACK_MARKET, tipo=TipoVenta.ORDEN)
-            )
+        with pytest.raises(ErrorDominio, match="tarifa"):
+            await self.caso.ejecutar(ADMIN, datos(tipo=TipoVenta.DIRECTA, tarifa_extra=500))
         assert self.repo.items == {}
 
 
@@ -135,7 +133,7 @@ class TestImportarVentas:
     async def test_una_fila_mala_cancela_todo(self):
         filas = [
             datos(),
-            datos(ciudad=Ciudad.BLACK_MARKET, tipo=TipoVenta.ORDEN),
+            datos(tipo=TipoVenta.DIRECTA, tarifa_extra=500),
             datos(precio_unitario=0),
         ]
         resultado = await self.caso.ejecutar(ADMIN, filas)

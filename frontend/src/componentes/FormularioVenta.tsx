@@ -29,18 +29,12 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
   const registrar = useRegistrarVenta();
   const { avisar } = useAvisos();
 
-  const sinOrdenes = ciudad === "Black Market"; // solo tiene órdenes de compra
-  const tipoEfectivo: TipoVenta = sinOrdenes ? "directa" : tipo;
-  const extra = tipoEfectivo === "orden" && Number(tarifaExtra) > 0 ? Number(tarifaExtra) : 0;
+  const extra = tipo === "orden" && Number(tarifaExtra) > 0 ? Number(tarifaExtra) : 0;
   const valido = objeto !== null && enteroPositivo(precio) && enteroPositivo(cantidad);
   const desglose = enteroPositivo(precio) && enteroPositivo(cantidad)
-    ? calcularDesglose(Number(precio), Number(cantidad), tipoEfectivo, extra)
+    ? calcularDesglose(Number(precio), Number(cantidad), tipo, extra)
     : null;
 
-  const elegirCiudad = (nueva: Ciudad) => {
-    setCiudad(nueva);
-    if (nueva === "Black Market") setTipo("directa");
-  };
 
   const enviar = (evento: FormEvent) => {
     evento.preventDefault();
@@ -49,7 +43,7 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
       base_id: objeto.base_id,
       ...ajustar(objeto, encantamiento, calidad),
       ciudad,
-      tipo: tipoEfectivo,
+      tipo,
       cantidad: Number(cantidad),
       precio_unitario: Number(precio),
       ...(fecha ? { fecha: new Date(fecha).toISOString() } : {}),
@@ -88,7 +82,7 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
 
       <label className="campo">
         <span>Ciudad</span>
-        <select value={ciudad} onChange={(e) => elegirCiudad(e.target.value as Ciudad)}>
+        <select value={ciudad} onChange={(e) => setCiudad(e.target.value as Ciudad)}>
           {CIUDADES.map((nombre) => (
             <option key={nombre} value={nombre}>{nombre}</option>
           ))}
@@ -103,14 +97,12 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
               type="radio"
               name="tipo"
               value={valor}
-              checked={tipoEfectivo === valor}
-              disabled={valor === "orden" && sinOrdenes}
+              checked={tipo === valor}
               onChange={() => setTipo(valor)}
             />
             {TIPOS_VENTA[valor]}
           </label>
         ))}
-        {sinOrdenes && <p className="campo__ayuda">El Black Market solo admite venta directa.</p>}
       </fieldset>
 
       <div className="rejilla-2">
@@ -124,7 +116,7 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
         </label>
       </div>
 
-      {tipoEfectivo === "orden" && (
+      {tipo === "orden" && (
         <label className="campo">
           <span>Tarifa por reajustes (si cambiaste el precio de la orden)</span>
           <input type="number" min={0} step={1} inputMode="numeric" value={tarifaExtra} onChange={(e) => setTarifaExtra(e.target.value)} />
@@ -142,7 +134,7 @@ export function FormularioVenta({ prefill, alTerminar }: Props) {
         <dl>
           <div><dt>Bruto</dt><dd className="num">{desglose ? plataCompleta(desglose.bruto) : "—"}</dd></div>
           <div><dt>Impuesto de venta (4 %)</dt><dd className="num">{desglose ? plataCompleta(desglose.impuesto) : "—"}</dd></div>
-          {tipoEfectivo === "orden" && (
+          {tipo === "orden" && (
             <div><dt>Tarifa de publicación (2.5 %)</dt><dd className="num">{desglose ? plataCompleta(desglose.tarifa) : "—"}</dd></div>
           )}
           <div className="vista-previa__neto"><dt>Neto</dt><dd className="num">{desglose ? plataCompleta(desglose.neto) : "—"}</dd></div>

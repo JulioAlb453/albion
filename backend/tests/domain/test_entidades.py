@@ -24,12 +24,12 @@ class TestVenta:
         assert venta.desglose.neto == 93_500
         assert venta.id is None
 
-    def test_black_market_no_admite_orden(self):
-        with pytest.raises(ErrorDominio, match="Black Market"):
-            Venta.registrar(
-                objeto=ESPADA, ciudad=Ciudad.BLACK_MARKET, tipo=TipoVenta.ORDEN,
-                cantidad=1, precio_unitario=50_000, fecha=AHORA,
-            )
+    def test_el_black_market_tambien_admite_orden_de_venta(self):
+        venta = Venta.registrar(
+            objeto=ESPADA, ciudad=Ciudad.BLACK_MARKET, tipo=TipoVenta.ORDEN,
+            cantidad=2, precio_unitario=50_000, fecha=AHORA,
+        )
+        assert venta.desglose.neto == 93_500
 
 
 class TestVentaNoAdmiteEstadosIlegales:
@@ -42,10 +42,6 @@ class TestVentaNoAdmiteEstadosIlegales:
             desglose=calcular_desglose(50_000, 2, TipoVenta.ORDEN),
         )
         return Venta(**(datos | cambios))
-
-    def test_orden_en_black_market(self):
-        with pytest.raises(ErrorDominio, match="Black Market"):
-            self.construir(ciudad=Ciudad.BLACK_MARKET)
 
     def test_desglose_de_otro_precio(self):
         with pytest.raises(ErrorDominio):

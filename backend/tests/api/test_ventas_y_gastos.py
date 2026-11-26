@@ -45,10 +45,17 @@ class TestVentas:
         assert respuesta.status_code == 403
         assert (await entorno.cliente.get("/api/ventas", headers=await entorno.encabezados())).json() == []
 
+    async def test_el_black_market_admite_orden_de_venta(self, entorno):
+        respuesta = await entorno.cliente.post(
+            "/api/ventas", json=venta(ciudad="Black Market", tipo="orden"), headers=await entorno.encabezados()
+        )
+        assert respuesta.status_code == 201
+        assert (respuesta.json()["ciudad"], respuesta.json()["tipo"]) == ("Black Market", "orden")
+
     @pytest.mark.parametrize(
         "cambios, texto",
         [
-            (dict(ciudad="Black Market", tipo="orden"), "Black Market"),
+            (dict(tipo="directa", tarifa_extra=500), "tarifa"),
             (dict(base_id="ESPADA"), "inválido"),
             (dict(encantamiento=2, base_id="T6_MAIN_SWORD@2"), "inválido"),
         ],

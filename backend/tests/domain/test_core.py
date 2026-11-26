@@ -32,10 +32,6 @@ class TestObjetoRef:
 
 
 class TestCiudad:
-    def test_black_market_solo_venta_directa(self):
-        assert not Ciudad.BLACK_MARKET.admite_orden_venta
-        assert Ciudad.CAERLEON.admite_orden_venta
-
     def test_ciudades_del_gremio(self):
         assert Ciudad.FORT_STERLING.es_del_gremio
         assert not Ciudad.MARTLOCK.es_del_gremio

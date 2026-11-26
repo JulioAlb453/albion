@@ -16,7 +16,7 @@ Términos tal como los usa el código. Si un término cambia de significado, se 
 | **Ciudad** | Mercado del servidor Americas, incluido el Black Market. | `Ciudad` |
 | **Ciudad del gremio** | Ciudad donde el gremio tiene isla: Fort Sterling, Lymhurst y Caerleon. | `CIUDADES_GREMIO` |
 | **Ciudad principal** | Fort Sterling. Es la referencia por defecto de las alertas. | `CIUDAD_PRINCIPAL` |
-| **Black Market** | Mercado de Caerleon que solo tiene órdenes de compra. Ahí solo se vende directo. | `Ciudad.admite_orden_venta` |
+| **Black Market** | Mercado de Caerleon. Se le vende directo (a sus órdenes de compra) o con orden de venta, como en cualquier otro mercado. | `Ciudad.BLACK_MARKET` |
 | **Precio de mercado** | Foto de las órdenes de un objeto en una ciudad, tal como la reportan los jugadores. Un precio 0 significa que no hay dato. | `PrecioMercado` |
 | **Venta mínima** | La orden de venta más barata publicada (`sell_price_min`). | `PrecioMercado.venta_minima` |
 | **Compra máxima** | La orden de compra más alta publicada (`buy_price_max`). | `PrecioMercado.compra_maxima` |

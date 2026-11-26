@@ -35,11 +35,14 @@ describe("FormularioVenta", () => {
     expect(vistaPrevia().queryByText(/tarifa de publicación/i)).not.toBeInTheDocument();
   });
 
-  it("el Black Market solo admite venta directa", async () => {
+  it("el Black Market también admite orden de venta", async () => {
     montar(PREFILL);
     await userEvent.selectOptions(screen.getByLabelText(/ciudad/i), "Black Market");
-    expect(screen.getByRole("radio", { name: /orden de venta/i })).toBeDisabled();
-    expect(screen.getByRole("radio", { name: /venta directa/i })).toBeChecked();
+    const orden = screen.getByRole("radio", { name: /orden de venta/i });
+    expect(orden).toBeEnabled();
+    await userEvent.click(orden);
+    expect(orden).toBeChecked();
+    expect(screen.queryByText(/solo admite venta directa/i)).not.toBeInTheDocument();
   });
 
   it("un artefacto no tiene encantamiento ni calidad", () => {

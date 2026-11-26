@@ -67,7 +67,7 @@ def comparar_por_ciudad(
                 precio, TipoVenta.DIRECTA, precio.compra_maxima, precio.compra_maxima_fecha, *args
             )
         orden = None
-        if precio.tiene_orden_venta and precio.ciudad.admite_orden_venta:
+        if precio.tiene_orden_venta:
             orden = _opcion(
                 precio, TipoVenta.ORDEN, precio.venta_minima, precio.venta_minima_fecha, *args
             )

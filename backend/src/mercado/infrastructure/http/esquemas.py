@@ -60,7 +60,7 @@ class ComparacionOut(BaseModel):
     ciudad: Ciudad
     es_del_gremio: bool
     directa: OpcionOut | None
-    orden: OpcionOut | None  # el Black Market no admite órdenes de venta
+    orden: OpcionOut | None  # None si nadie ha reportado órdenes de venta ahí
     mejor: TipoVenta | None
     confiable: bool  # si la mejor opción de la ciudad tiene un dato reciente
     diferencia_orden_vs_directa: int | None

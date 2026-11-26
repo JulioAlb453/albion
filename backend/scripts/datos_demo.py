@@ -72,7 +72,7 @@ async def sembrar(db: Database) -> dict[str, int]:
     for _ in range(38):
         base_id, encantamiento, calidad, precio_base, cantidades = azar.choice(OBJETOS)
         ciudad = azar.choice(CIUDADES)
-        orden = ciudad.admite_orden_venta and azar.random() >= 0.45
+        orden = azar.random() >= 0.45
         lote.append(
             Venta.registrar(
                 objeto=ObjetoRef(base_id, encantamiento, calidad),

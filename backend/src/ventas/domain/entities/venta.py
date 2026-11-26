@@ -25,8 +25,6 @@ class Venta:
     id: int | None = None
 
     def __post_init__(self) -> None:
-        if self.tipo is TipoVenta.ORDEN and not self.ciudad.admite_orden_venta:
-            raise ErrorDominio(f"{self.ciudad} no admite órdenes de venta, solo venta directa")
         if self.cantidad <= 0 or self.precio_unitario <= 0:
             raise ErrorDominio("La cantidad y el precio unitario deben ser mayores a cero")
         if self.desglose.bruto != self.precio_unitario * self.cantidad:

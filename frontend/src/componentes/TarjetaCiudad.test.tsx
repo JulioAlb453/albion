@@ -47,10 +47,10 @@ describe("TarjetaCiudad", () => {
     expect(screen.getByText("Mejor opción")).toBeInTheDocument();
   });
 
-  it("el Black Market explica que no admite órdenes de venta", () => {
+  it("el Black Market muestra la orden de venta como cualquier mercado", () => {
     pintar(BLACK_MARKET);
-    expect(screen.getByText(/solo admite venta directa/i)).toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: /orden de venta/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/solo admite venta directa/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/sin órdenes de venta registradas/i)).toBeInTheDocument();
   });
 
   it("un dato viejo se atenúa y dice de hace cuánto es", () => {

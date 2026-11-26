@@ -124,7 +124,7 @@ export interface Comparacion {
   ciudad: Ciudad;
   es_del_gremio: boolean;
   directa: Opcion | null;
-  orden: Opcion | null; // el Black Market no admite órdenes de venta
+  orden: Opcion | null; // null si nadie ha reportado órdenes de venta ahí
   mejor: TipoVenta | null;
   confiable: boolean;
   diferencia_orden_vs_directa: number | null;

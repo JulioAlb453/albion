@@ -14,11 +14,6 @@ class Ciudad(StrEnum):
     BLACK_MARKET = "Black Market"
 
     @property
-    def admite_orden_venta(self) -> bool:
-        # El Black Market solo tiene órdenes de compra: ahí solo se vende directo.
-        return self is not Ciudad.BLACK_MARKET
-
-    @property
     def es_del_gremio(self) -> bool:
         return self in CIUDADES_GREMIO
 

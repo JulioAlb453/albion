@@ -32,3 +32,7 @@ class IVentaRepository(ABC):
 
     @abstractmethod
     async def delete(self, venta_id: int) -> None: ...
+
+    @abstractmethod
+    async def update(self, venta: Venta) -> Venta:
+        """Reemplaza los datos de una venta que ya existe (la de `venta.id`)."""

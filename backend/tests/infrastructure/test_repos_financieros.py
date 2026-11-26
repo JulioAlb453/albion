@@ -38,6 +38,15 @@ class TestSqliteVentaRepository:
         assert await repo.get_by_id(1) == guardada
         assert guardada.desglose.tarifa_publicacion == 6_500  # 2.5 % de 200000 + 1500 de reajuste
 
+    async def test_actualiza_el_objeto_de_una_venta(self, repo):
+        import dataclasses
+        guardada = await repo.save(venta())
+        otra = await repo.save(venta(26))
+        corregida = dataclasses.replace(guardada, objeto=ObjetoRef("T6_MAIN_SWORD", 4))
+        await repo.update(corregida)
+        assert await repo.get_by_id(guardada.id) == corregida
+        assert await repo.get_by_id(otra.id) == otra
+
     async def test_una_venta_inexistente_es_none(self, repo):
         assert await repo.get_by_id(99) is None
 

@@ -312,3 +312,9 @@ input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
   .usuario { padding: 3px; }
   .usuario > div:last-child { display: none; }
 }
+
+/* ---------- Ventas: objeto con imagen y acciones ---------- */
+.tabla__objeto--imagen { flex-direction: row; align-items: center; gap: 10px; min-width: 230px; }
+.tabla__objeto-texto { display: flex; flex-direction: column; min-width: 0; }
+.tabla__acciones { white-space: nowrap; }
+.tabla__acciones .boton + .boton { margin-left: 4px; }

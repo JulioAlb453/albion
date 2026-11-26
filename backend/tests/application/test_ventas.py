@@ -6,6 +6,8 @@ from src.core.domain.errors import AccesoDenegado, EntidadNoEncontrada, ErrorDom
 from src.core.domain.value_objects.ciudad import Ciudad
 from src.core.domain.value_objects.tipo_venta import TipoVenta
 from src.ventas.application.datos_venta import DatosVenta
+from src.core.domain.value_objects.calidad import Calidad
+from src.ventas.application.corregir_venta_use_case import CorregirVenta
 from src.ventas.application.eliminar_venta_use_case import EliminarVenta
 from src.ventas.application.importar_ventas_use_case import ImportarVentas
 from src.ventas.application.listar_ventas_use_case import ListarVentas
@@ -87,6 +89,37 @@ class TestEliminarVenta:
         with pytest.raises(AccesoDenegado):
             await self.caso.ejecutar(GENERAL, venta.id)
         assert venta.id in self.repo.items
+
+
+class TestCorregirVenta:
+    def setup_method(self):
+        self.repo = VentaRepoMemoria()
+        self.caso = CorregirVenta(self.repo)
+
+    async def test_cambia_encantamiento_y_calidad_sin_tocar_lo_demas(self):
+        venta = await RegistrarVenta(self.repo, RelojFijo()).ejecutar(ADMIN, datos())
+        desglose, fecha = venta.desglose, venta.fecha
+        corregida = await self.caso.ejecutar(ADMIN, venta.id, encantamiento=3, calidad=5)
+        assert (corregida.objeto.base_id, corregida.objeto.encantamiento, corregida.objeto.calidad) == (
+            "T6_MAIN_SWORD", 3, Calidad.OBRA_MAESTRA
+        )
+        assert (corregida.desglose, corregida.fecha, corregida.id) == (desglose, fecha, venta.id)
+        assert self.repo.items[venta.id].objeto.encantamiento == 3
+
+    async def test_un_encantamiento_fuera_de_rango_no_se_guarda(self):
+        venta = await RegistrarVenta(self.repo, RelojFijo()).ejecutar(ADMIN, datos())
+        with pytest.raises(ErrorDominio):
+            await self.caso.ejecutar(ADMIN, venta.id, encantamiento=5, calidad=1)
+        assert self.repo.items[venta.id].objeto.encantamiento == 2
+
+    async def test_una_venta_inexistente(self):
+        with pytest.raises(EntidadNoEncontrada):
+            await self.caso.ejecutar(ADMIN, 99, encantamiento=1, calidad=1)
+
+    async def test_un_general_no_puede_corregir(self):
+        venta = await RegistrarVenta(self.repo, RelojFijo()).ejecutar(ADMIN, datos())
+        with pytest.raises(AccesoDenegado):
+            await self.caso.ejecutar(GENERAL, venta.id, encantamiento=1, calidad=1)
 
 
 class TestImportarVentas:

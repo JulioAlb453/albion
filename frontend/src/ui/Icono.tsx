@@ -32,6 +32,7 @@ const FORMAS = {
   descargar: <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />,
   subir: <path d="M12 16V5M7 9l5-5 5 5M5 20h14" />,
   borrar: <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />,
+  editar: <path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />,
   cerrar: <path d="M6 6l12 12M18 6 6 18" />,
   buscar: (
     <>

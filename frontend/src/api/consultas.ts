@@ -139,6 +139,16 @@ export function useEliminarVenta() {
   });
 }
 
+export function useCorregirVenta() {
+  const c = useCliente();
+  const invalidar = useInvalidar();
+  return useMutation({
+    mutationFn: ({ id, encantamiento, calidad }: { id: number; encantamiento: number; calidad: number }) =>
+      c.patch<Venta>(`/api/ventas/${id}`, { encantamiento, calidad }),
+    onSuccess: () => invalidar("ventas", "reportes"),
+  });
+}
+
 export function useImportarVentas() {
   const c = useCliente();
   const invalidar = useInvalidar();

@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { OBJETO_ESPADA, venta } from "../pruebas/datos";
+import { ESPADA, OBJETO_ESPADA, venta } from "../pruebas/datos";
 import { instalarApi, montarPagina, ultimaDescarga, USUARIO_GENERAL } from "../pruebas/utiles";
 import { guardarArchivo } from "../util/descargar";
 import { finDelDia, inicioDelDia } from "../util/formato";
@@ -8,7 +8,7 @@ import { Ventas } from "./Ventas";
 
 vi.mock("../util/descargar", () => ({ guardarArchivo: vi.fn() }));
 
-const ARMADURA = { ...OBJETO_ESPADA, base_id: "T6_ARMOR_PLATE_SET1", nombre: "Armadura de soldado del maestro", etiqueta: "T6.0" };
+const ARMADURA = { ...OBJETO_ESPADA, base_id: "T6_ARMOR_PLATE_SET1", nombre: "Armadura de soldado del maestro", etiqueta: "T6.0", encantamiento: 0 };
 const VENTAS = [
   venta({ id: 1, fecha: "2026-11-24T10:00:00Z" }),
   venta({ id: 2, objeto: ARMADURA, ciudad: "Caerleon", tipo: "orden", cantidad: 1, precio_unitario: 100_000, bruto: 100_000, impuesto: 4_000, tarifa_publicacion: 2_500, neto: 93_500, fecha: "2026-11-25T18:00:00Z" }),
@@ -34,6 +34,17 @@ describe("lista", () => {
     // neto total 192,000 + 93,500; cargos 8,000 + 6,500
     expect(within(filas[3]!).getByTitle("285,500")).toBeInTheDocument();
     expect(within(filas[3]!).getByTitle("14,500")).toBeInTheDocument();
+  });
+
+  it("cada venta dice su encantamiento y su calidad, con la imagen del objeto", async () => {
+    instalarApi(RUTAS);
+    const { container } = montarPagina(<Ventas />);
+    const tabla = await screen.findByRole("table");
+    const [, armadura, espada] = within(tabla).getAllByRole("row");
+    expect(within(espada!).getByText(/encantamiento \.2/i)).toBeInTheDocument();
+    expect(within(espada!).getByText(/sobresaliente/i)).toBeInTheDocument();
+    expect(within(armadura!).getByText(/sin encantar/i)).toBeInTheDocument();
+    expect(container.querySelector('img[src*="T6_MAIN_SWORD@2.png?quality=4"]')).not.toBeNull();
   });
 
   it("sin ventas invita a registrar la primera", async () => {
@@ -101,6 +112,24 @@ describe("permisos y acciones", () => {
     expect(await screen.findByText(/venta eliminada/i)).toBeInTheDocument();
   });
 
+  it("el admin corrige el encantamiento que olvidó poner", async () => {
+    const corregida = venta({ id: 1, objeto: { ...OBJETO_ESPADA, encantamiento: 3, etiqueta: "T6.3" }, fecha: "2026-11-24T10:00:00Z" });
+    const llamadas = instalarApi({ ...RUTAS, "GET /api/catalogo/T6_MAIN_SWORD": ESPADA, "PATCH /api/ventas/1": corregida });
+    montarPagina(<Ventas />);
+    await screen.findByRole("table");
+    await userEvent.click(screen.getByRole("button", { name: /corregir venta de espada/i }));
+    const dialogo = screen.getByRole("dialog", { name: /corregir venta/i });
+    const encantamiento = await within(dialogo).findByRole("combobox", { name: /encantamiento/i });
+    expect(encantamiento).toHaveValue("2"); // empieza con lo que tenía
+    await userEvent.selectOptions(encantamiento, "3");
+    await userEvent.click(within(dialogo).getByRole("button", { name: /guardar/i }));
+    await waitFor(() => expect(llamadas.find((l) => l.metodo === "PATCH")).toMatchObject({
+      ruta: "/api/ventas/1", cuerpo: { encantamiento: 3, calidad: 4 },
+    }));
+    expect(await screen.findByText(/venta corregida/i)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /corregir venta/i })).not.toBeInTheDocument();
+  });
+
   it("el admin puede importar (registrar una venta está siempre en la barra superior)", async () => {
     instalarApi(RUTAS);
     montarPagina(<Ventas />);
@@ -117,6 +146,7 @@ describe("permisos y acciones", () => {
     expect(screen.queryByRole("button", { name: /registrar venta/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^importar$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /eliminar venta/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /corregir venta/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /exportar csv/i })).toBeInTheDocument();
   });
 });

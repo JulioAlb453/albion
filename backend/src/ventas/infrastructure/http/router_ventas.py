@@ -15,7 +15,7 @@ from src.ventas.domain.entities.venta import Venta
 from src.ventas.domain.ports.i_venta_repository import FiltroVentas
 from src.ventas.infrastructure.csv_ventas import leer_ventas, plantilla_ventas
 from src.ventas.infrastructure.http import exportacion
-from src.ventas.infrastructure.http.esquemas import VentaIn, VentaOut
+from src.ventas.infrastructure.http.esquemas import CorreccionVentaIn, VentaIn, VentaOut
 
 router = APIRouter(prefix="/api/ventas", tags=["ventas"])
 
@@ -83,6 +83,19 @@ async def importar(
     return await procesar_importacion(
         archivo, leer_ventas, lambda filas: c.importar_ventas.ejecutar(usuario, filas, fila_inicial=2)
     )
+
+
+@router.patch("/{venta_id}")
+async def corregir(
+    venta_id: int,
+    datos: CorreccionVentaIn,
+    usuario: Usuario = Depends(usuario_actual),
+    c: Contenedor = Depends(contenedor),
+) -> VentaOut:
+    venta = await c.corregir_venta.ejecutar(
+        usuario, venta_id, encantamiento=datos.encantamiento, calidad=datos.calidad
+    )
+    return (await a_salidas(c, [venta]))[0]
 
 
 @router.delete("/{venta_id}", status_code=204)

@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDescargar, useEliminarVenta, useImportarVentas, useVentas } from "../api/consultas";
-import { CIUDADES, TIPOS_VENTA, type Ciudad, type TipoVenta } from "../api/tipos";
+import { CIUDADES, TIPOS_VENTA, type Ciudad, type TipoVenta, type Venta } from "../api/tipos";
 import { CargaFallida } from "../componentes/CargaFallida";
 import { DialogoImportar } from "../componentes/DialogoImportar";
+import { FormularioCorregirVenta } from "../componentes/FormularioCorregirVenta";
 import { useSesion } from "../sesion/ContextoSesion";
 import { useAvisos } from "../ui/Avisos";
 import { Bloque, Plata, Vacio } from "../ui/Bloque";
+import { Cajon } from "../ui/Cajon";
 import { Icono } from "../ui/Icono";
+import { ImagenObjeto } from "../ui/ImagenObjeto";
 import { etiquetaCalidad, fechaHora, finDelDia, inicioDelDia, plataCompleta } from "../util/formato";
 
 export function Ventas() {
@@ -18,6 +21,7 @@ export function Ventas() {
   const [hasta, setHasta] = useState("");
   const [importando, setImportando] = useState(false);
   const [confirmando, setConfirmando] = useState<number | null>(null);
+  const [corrigiendo, setCorrigiendo] = useState<Venta | null>(null);
 
   const filtro = useMemo(
     () => ({ desde: desde ? inicioDelDia(desde) : undefined, hasta: hasta ? finDelDia(hasta) : undefined, ciudad, tipo }),
@@ -129,9 +133,19 @@ export function Ventas() {
                     <tr key={venta.id}>
                       <td className="texto-2">{fechaHora(venta.fecha)}</td>
                       <td>
-                        <div className="tabla__objeto">
-                          <span>{nombre}</span>
-                          <span className="lista__detalle">{venta.objeto.etiqueta} · {etiquetaCalidad(venta.objeto.calidad)}</span>
+                        <div className="tabla__objeto tabla__objeto--imagen">
+                          <ImagenObjeto
+                            baseId={venta.objeto.base_id} encantamiento={venta.objeto.encantamiento}
+                            calidad={venta.objeto.calidad} tamano={36}
+                          />
+                          <span className="tabla__objeto-texto">
+                            <span>{nombre}</span>
+                            <span className="lista__detalle">
+                              {venta.objeto.base_id.slice(0, 2)} ·{" "}
+                              {venta.objeto.encantamiento > 0 ? `Encantamiento .${venta.objeto.encantamiento}` : "Sin encantar"} ·{" "}
+                              {etiquetaCalidad(venta.objeto.calidad)}
+                            </span>
+                          </span>
                         </div>
                       </td>
                       <td>{venta.ciudad}</td>
@@ -141,7 +155,16 @@ export function Ventas() {
                       <td className="num">{plataCompleta(venta.impuesto + venta.tarifa_publicacion)}</td>
                       <td className="num"><Plata valor={venta.neto} tamano="chica" /></td>
                       {usuario.puede_registrar && (
-                        <td className="num">
+                        <td className="num tabla__acciones">
+                          <button
+                            type="button"
+                            className="boton boton--chico boton--fantasma"
+                            aria-label={`Corregir venta de ${nombre}`}
+                            title="Corregir encantamiento o calidad"
+                            onClick={() => setCorrigiendo(venta)}
+                          >
+                            <Icono nombre="editar" tamano={16} />
+                          </button>
                           <button
                             type="button"
                             className={`boton boton--chico ${confirmando === venta.id ? "boton--peligro" : "boton--fantasma"}`}
@@ -177,6 +200,11 @@ export function Ventas() {
         importar={(archivo) => importar.mutateAsync(archivo)}
         descargarPlantilla={() => void descargar("/api/ventas/plantilla")}
       />
+      <Cajon abierto={corrigiendo !== null} titulo="Corregir venta" alCerrar={() => setCorrigiendo(null)}>
+        {corrigiendo && (
+          <FormularioCorregirVenta key={corrigiendo.id} venta={corrigiendo} alTerminar={() => setCorrigiendo(null)} />
+        )}
+      </Cajon>
     </div>
   );
 }

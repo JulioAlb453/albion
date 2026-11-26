@@ -12,6 +12,13 @@ from src.ventas.application.datos_venta import DatosVenta
 from src.ventas.domain.entities.venta import Venta
 
 
+class CorreccionVentaIn(BaseModel):
+    """Lo que se puede corregir de una venta ya registrada."""
+
+    encantamiento: int = Field(ge=0, le=4)
+    calidad: Calidad
+
+
 class VentaIn(BaseModel):
     base_id: str
     encantamiento: int = Field(0, ge=0, le=4)

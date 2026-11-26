@@ -67,6 +67,10 @@ class VentaRepoMemoria(_Memoria, IVentaRepository):
     async def delete(self, venta_id):
         self.items.pop(venta_id, None)
 
+    async def update(self, venta):
+        self.items[venta.id] = venta
+        return venta
+
     async def list(self, filtro=FiltroVentas()):
         return [
             v for v in self.items.values()

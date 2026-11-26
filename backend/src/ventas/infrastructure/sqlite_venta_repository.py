@@ -68,6 +68,21 @@ class SqliteVentaRepository(IVentaRepository):
             fila = await cursor.fetchone()
         return None if fila is None else _a_venta(fila)
 
+    async def update(self, venta: Venta) -> Venta:
+        async with self._db.sesion() as conn:
+            await conn.execute(
+                "UPDATE ventas SET base_id = ?, encantamiento = ?, calidad = ?, ciudad = ?, tipo = ?, "
+                "cantidad = ?, precio_unitario = ?, fecha = ?, bruto = ?, impuesto = ?, "
+                "tarifa_publicacion = ?, neto = ? WHERE id = ?",
+                (
+                    venta.objeto.base_id, venta.objeto.encantamiento, int(venta.objeto.calidad),
+                    venta.ciudad.value, venta.tipo.value, venta.cantidad, venta.precio_unitario,
+                    a_texto(venta.fecha), venta.desglose.bruto, venta.desglose.impuesto,
+                    venta.desglose.tarifa_publicacion, venta.desglose.neto, venta.id,
+                ),
+            )
+        return venta
+
     async def delete(self, venta_id: int) -> None:
         async with self._db.sesion() as conn:
             await conn.execute("DELETE FROM ventas WHERE id = ?", (venta_id,))

@@ -106,6 +106,7 @@ export function crearCliente(opciones: Opciones) {
     get: <T>(ruta: string, params?: Parametros) => enviar("GET", ruta, { params }).then((r) => json<T>(r)),
     post: <T>(ruta: string, cuerpo?: unknown) => enviar("POST", ruta, { cuerpo }).then((r) => json<T>(r)),
     put: <T>(ruta: string, cuerpo?: unknown) => enviar("PUT", ruta, { cuerpo }).then((r) => json<T>(r)),
+    patch: <T>(ruta: string, cuerpo?: unknown) => enviar("PATCH", ruta, { cuerpo }).then((r) => json<T>(r)),
     delete: <T = void>(ruta: string) => enviar("DELETE", ruta).then((r) => json<T>(r)),
 
     subir<T>(ruta: string, archivo: File, campo = "archivo") {

@@ -43,6 +43,7 @@ from src.usuarios.domain.ports.i_directorio_roles import IDirectorioRoles
 from src.usuarios.domain.ports.i_proveedor_identidad import IProveedorIdentidad
 from src.usuarios.infrastructure.emisor_tokens import EmisorTokens
 from src.usuarios.infrastructure.sqlite_usuario_repository import SqliteUsuarioRepository
+from src.ventas.application.corregir_venta_use_case import CorregirVenta
 from src.ventas.application.eliminar_venta_use_case import EliminarVenta
 from src.ventas.application.importar_ventas_use_case import ImportarVentas
 from src.ventas.application.listar_ventas_use_case import ListarVentas
@@ -93,6 +94,7 @@ class Contenedor:
         self.registrar_venta = RegistrarVenta(ventas, reloj)
         self.listar_ventas = ListarVentas(ventas)
         self.eliminar_venta = EliminarVenta(ventas)
+        self.corregir_venta = CorregirVenta(ventas)
         self.importar_ventas = ImportarVentas(ventas, reloj)
 
         self.registrar_gasto = RegistrarGasto(gastos, reloj)

@@ -83,6 +83,27 @@ class TestVentas:
         assert (await entorno.cliente.delete(f"/api/ventas/{creada['id']}", headers=admin)).status_code == 404
 
 
+    async def test_corrige_encantamiento_y_calidad(self, entorno):
+        admin = await entorno.encabezados()
+        creada = (await entorno.cliente.post("/api/ventas", json=venta(), headers=admin)).json()
+        ruta = f"/api/ventas/{creada['id']}"
+        respuesta = await entorno.cliente.patch(ruta, json={"encantamiento": 3, "calidad": 5}, headers=admin)
+        assert respuesta.status_code == 200
+        assert respuesta.json()["objeto"] | {} == creada["objeto"] | {"encantamiento": 3, "calidad": 5, "etiqueta": "T6.3"}
+        assert respuesta.json()["neto"] == creada["neto"]
+        listada = (await entorno.cliente.get("/api/ventas", headers=admin)).json()[0]
+        assert (listada["objeto"]["encantamiento"], listada["objeto"]["calidad"]) == (3, 5)
+
+    async def test_corregir_distingue_los_errores(self, entorno):
+        admin = await entorno.encabezados()
+        creada = (await entorno.cliente.post("/api/ventas", json=venta(), headers=admin)).json()
+        ruta = f"/api/ventas/{creada['id']}"
+        general = await entorno.encabezados(Rol.GENERAL)
+        assert (await entorno.cliente.patch(ruta, json={"encantamiento": 1, "calidad": 1}, headers=general)).status_code == 403
+        assert (await entorno.cliente.patch(ruta, json={"encantamiento": 9, "calidad": 1}, headers=admin)).status_code == 422
+        assert (await entorno.cliente.patch("/api/ventas/999", json={"encantamiento": 1, "calidad": 1}, headers=admin)).status_code == 404
+
+
 class TestGastos:
     async def test_sin_sesion_no_hay_acceso(self, entorno):
         assert (await entorno.cliente.get("/api/gastos")).status_code == 401

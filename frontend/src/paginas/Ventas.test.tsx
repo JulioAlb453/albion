@@ -62,6 +62,45 @@ describe("lista", () => {
   });
 });
 
+describe("paginación", () => {
+  // 40 ventas de 1 de plata neta cada una
+  const MUCHAS = Array.from({ length: 40 }, (_, n) =>
+    venta({ id: n + 1, neto: 1, fecha: `2026-11-${String(Math.floor(n / 2) + 1).padStart(2, "0")}T${n % 2 ? "18" : "10"}:00:00Z` }),
+  );
+  const filasDeVentas = () => within(screen.getByRole("table")).getAllByRole("row").slice(1, -1);
+
+  it("muestra 15 por página y los totales cubren todas", async () => {
+    instalarApi({ ...RUTAS, "GET /api/ventas": MUCHAS });
+    montarPagina(<Ventas />);
+    await screen.findByRole("table");
+    expect(filasDeVentas()).toHaveLength(15);
+    expect(screen.getByText(/40 ventas/i)).toBeInTheDocument();
+    expect(screen.getByTitle("40")).toBeInTheDocument();
+    expect(screen.getByText("1–15 de 40")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Página 3" }));
+    expect(filasDeVentas()).toHaveLength(10);
+    expect(screen.getByText("31–40 de 40")).toBeInTheDocument();
+  });
+
+  it("cambiar un filtro vuelve a la primera página", async () => {
+    instalarApi({ ...RUTAS, "GET /api/ventas": MUCHAS });
+    montarPagina(<Ventas />);
+    await screen.findByRole("table");
+    await userEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+    expect(screen.getByRole("button", { name: "Página 2" })).toHaveAttribute("aria-current", "page");
+    await userEvent.selectOptions(screen.getByLabelText(/ciudad/i), "Caerleon");
+    expect(await screen.findByText("1–15 de 40")).toBeInTheDocument();
+  });
+
+  it("con 15 o menos no aparece", async () => {
+    instalarApi(RUTAS);
+    montarPagina(<Ventas />);
+    await screen.findByRole("table");
+    expect(screen.queryByRole("navigation", { name: /paginación/i })).not.toBeInTheDocument();
+  });
+});
+
 describe("filtros", () => {
   it("pide solo lo que se filtra: ciudad, tipo y fechas en hora local", async () => {
     const llamadas = instalarApi(RUTAS);

@@ -11,7 +11,10 @@ import { Bloque, Plata, Vacio } from "../ui/Bloque";
 import { Cajon } from "../ui/Cajon";
 import { Icono } from "../ui/Icono";
 import { ImagenObjeto } from "../ui/ImagenObjeto";
+import { Paginacion } from "../ui/Paginacion";
 import { etiquetaCalidad, fechaHora, finDelDia, inicioDelDia, plataCompleta } from "../util/formato";
+
+const POR_PAGINA = 15;
 
 export function Ventas() {
   const { usuario } = useSesion();
@@ -45,6 +48,14 @@ export function Ventas() {
   const hayFiltros = Boolean(desde || hasta || ciudad || tipo);
   const totalNeto = filas.reduce((suma, v) => suma + v.neto, 0);
   const totalCargos = filas.reduce((suma, v) => suma + v.impuesto + v.tarifa_publicacion, 0);
+
+  // Los totales cubren todas las ventas filtradas; la tabla muestra solo una página.
+  // La página va atada al filtro con que se eligió: cambiar un filtro vuelve a la primera.
+  const [pagina, setPagina] = useState({ filtro, numero: 1 });
+  const totalPaginas = Math.max(1, Math.ceil(filas.length / POR_PAGINA));
+  // al borrar la última venta de la última página no se queda en una página vacía
+  const paginaVisible = Math.min(pagina.filtro === filtro ? pagina.numero : 1, totalPaginas);
+  const visibles = filas.slice((paginaVisible - 1) * POR_PAGINA, paginaVisible * POR_PAGINA);
 
   const borrar = (id: number) => {
     if (confirmando !== id) {
@@ -128,7 +139,7 @@ export function Ventas() {
                 </tr>
               </thead>
               <tbody>
-                {filas.map((venta) => {
+                {visibles.map((venta) => {
                   const nombre = venta.objeto.nombre ?? venta.objeto.base_id;
                   return (
                     <tr key={venta.id}>
@@ -190,6 +201,9 @@ export function Ventas() {
               </tfoot>
             </table>
           </div>
+        )}
+        {ventas.isSuccess && (
+          <Paginacion pagina={paginaVisible} total={filas.length} porPagina={POR_PAGINA} alCambiar={(numero) => setPagina({ filtro, numero })} />
         )}
       </Bloque>
 

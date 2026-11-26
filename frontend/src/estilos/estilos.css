@@ -323,3 +323,9 @@ input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
 .semana { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .semana__titulo { display: flex; flex-direction: column; min-width: 150px; text-align: center; }
 .semana .boton--icono { font-size: 20px; line-height: 1; }
+
+/* ---------- Paginación ---------- */
+.paginacion { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.paginacion__botones { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.paginacion__botones .boton { min-width: 34px; justify-content: center; }
+.paginacion__hueco { padding: 0 4px; color: var(--texto-3, inherit); }

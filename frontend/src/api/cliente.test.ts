@@ -53,6 +53,14 @@ describe("peticiones", () => {
     expect(cabeceras.get("authorization")).toBe("Bearer token-123");
   });
 
+  it("lleva la cabecera que evita la página de aviso del dominio gratuito de ngrok", async () => {
+    const { cliente, fetchFalso } = armar(respuesta({ json: [] }), respuesta({ json: {} }));
+    await cliente.get("/api/ventas");
+    expect(ultimaLlamada(fetchFalso).cabeceras.get("ngrok-skip-browser-warning")).toBe("true");
+    await cliente.post("/api/ventas", {});
+    expect(ultimaLlamada(fetchFalso).cabeceras.get("ngrok-skip-browser-warning")).toBe("true");
+  });
+
   it("envía JSON en POST y PUT", async () => {
     const { cliente, fetchFalso } = armar(respuesta({ json: { id: 1 } }), respuesta({ json: {} }));
     await cliente.post("/api/ventas", { cantidad: 2 });

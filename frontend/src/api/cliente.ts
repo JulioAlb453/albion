@@ -74,7 +74,9 @@ export function crearCliente(opciones: Opciones) {
   }
 
   async function enviar(metodo: string, ruta: string, { params, cuerpo, formulario }: Extras = {}) {
-    const cabeceras = new Headers();
+    // El dominio gratuito de ngrok responde una página HTML de aviso a las peticiones de un
+    // navegador, salvo que lleve esta cabecera (cualquier valor). En otros servidores no hace nada.
+    const cabeceras = new Headers({ "ngrok-skip-browser-warning": "true" });
     const token = opciones.obtenerToken();
     if (token) cabeceras.set("Authorization", `Bearer ${token}`);
 
